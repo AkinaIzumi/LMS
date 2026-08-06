@@ -61,4 +61,9 @@ public class BorrowTransactionController {
         List<BorrowTransaction> transactions = borrowTransactionService.getTransactionsByMember(memberId);
         return ResponseEntity.ok(transactions);
     }
+    @PostMapping("/return/{id}")
+    public ResponseEntity<Void> returnBook(@PathVariable Integer id) {
+        borrowTransactionService.returnBook(id);
+        return ResponseEntity.ok().build();
+    }
 }

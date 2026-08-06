@@ -57,6 +57,7 @@ public class CategoryServiceImpl implements CategoryService {
 
         existingCategory.setName(categoryDetails.getName());
         existingCategory.setDescription(categoryDetails.getDescription());
+        existingCategory.setShelfLocation(categoryDetails.getShelfLocation());
 
         return categoryRepository.save(existingCategory);
     }

@@ -25,10 +25,9 @@
             <div class="page-card p-4">
                 <h1 class="h4 mb-4">Edit Category</h1>
 
-                <!-- id="categoryForm" ထည့်သွင်းထားပါသည် -->
                 <form id="categoryForm" th:object="${category}">
                     
-                    <!-- Update အတွက် ID ကို သိမ်းဆည်းရန် Hidden Input ထည့်ပေးပါ -->
+                    <!-- Hidden ID -->
                     <input type="hidden" id="categoryId" th:field="*{id}">
 
                     <div class="mb-3">
@@ -39,6 +38,12 @@
                     <div class="mb-3">
                         <label for="description" class="form-label">Description</label>
                         <textarea id="description" th:field="*{description}" class="form-control" rows="3" placeholder="Enter Description"></textarea>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="shelfLocation" class="form-label">Shelf Location</label>
+                        <!-- th:field ကို ဖြုတ်ပြီး id နှင့် placeholder သသက်သာ ထားရှိပါ -->
+                        <input type="text" class="form-control" id="shelfLocation" th:value="*{shelfLocation}" placeholder="Enter Shelf Location">
                     </div>
 
                     <div class="mt-4">
@@ -69,12 +74,12 @@ document.getElementById("categoryForm").addEventListener("submit", async functio
     const categoryId = document.getElementById("categoryId")?.value;
     const category = {
         name: document.getElementById("name").value,
-        description: document.getElementById("description").value
+        description: document.getElementById("description").value,
+        shelfLocation: document.getElementById("shelfLocation").value
     };
 
-    // ID ရှိလျှင် Update (PUT)၊ မရှိလျှင် Create (POST)
     const url = categoryId ? `/api/categories/${categoryId}` : "/api/categories";
-    const method = categoryId ? "PUT" : "POST"; // အဓိက ပြင်ဆင်ရန် နေရာ
+    const method = categoryId ? "PUT" : "POST"; 
 
     try {
         const response = await fetch(url, {

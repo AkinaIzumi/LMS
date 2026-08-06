@@ -47,10 +47,11 @@
 							<label class="form-label">Book <span class="text-danger">*</span></label>
 							<select id="bookId" class="form-select" required>
 								<option value="">-- Select Book --</option>
-								<!-- b.bookCode အစား b.isbn သို့မဟုတ် b.title ကို ပြောင်းသုံးပါ -->
 								<option th:each="b : ${books}" 
 										th:value="${b.id}" 
-										th:text="${b.isbn + ' - ' + b.title}">
+										th:text="${b.isbn + ' - ' + b.title + (b.status == 'BORROWED' ? ' (Borrowed)' : '')}"
+										th:disabled="${b.status == 'BORROWED'}"
+										th:class="${b.status == 'BORROWED' ? 'text-muted bg-light' : ''}">
 								</option>
 							</select>
 						</div>
@@ -72,9 +73,7 @@
                                 <label class="form-label">Due Date <span class="text-danger">*</span></label>
                                 <input type="date" id="dueDate" class="form-control" required>
                             </div>
-                        </div>
-						<div class="row">
-                            <div class="col-md-6 mb-3">
+							<div class="col-md-4 mb-3">
                                 <label class="form-label">Status <span class="text-danger">*</span></label>
                                 <select id="status" class="form-select" required>
                                     <option value="BORROWED">Borrowed</option>
@@ -91,7 +90,7 @@
                         <!-- Action Buttons -->
                         <div class="d-flex gap-2 mt-3">
                             <button type="submit" class="btn btn-matcha">
-                                <i class="bi bi-check-circle me-1"></i>Save Borrow Record
+                                <i class="bi bi-check-circle me-1"></i>Save 
                             </button>
                             <a href="/transactions" class="btn btn-secondary">
                                 <i class="bi bi-arrow-left me-1"></i>Cancel

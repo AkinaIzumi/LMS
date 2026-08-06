@@ -55,6 +55,9 @@ public class BorrowTransaction {
     @Column(nullable = false, length = 20)
     private String status;
 
+    @Column(name = "fine")
+    private Double fine = 0.0;
+    
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;

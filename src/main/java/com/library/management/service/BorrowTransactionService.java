@@ -18,4 +18,6 @@ public interface BorrowTransactionService {
     void deleteTransaction(Integer id);
 
     List<BorrowTransaction> getTransactionsByMember(Integer memberId);
+
+    void returnBook(Integer transactionId);
 }

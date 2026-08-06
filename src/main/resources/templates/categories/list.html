@@ -30,6 +30,7 @@
                                 <th>ID</th>
                                 <th>Name</th>
                                 <th>Description</th>
+                                <th>Shelf Location</th>
                                 <th>Created Date</th>
                                 <th class="text-center">Action</th>
                             </tr>
@@ -39,6 +40,7 @@
                                 <td th:text="${category.id}"></td>
                                 <td th:text="${category.name}"></td>
                                 <td th:text="${category.description}"></td>
+                                <td th:text="${category.shelfLocation != null ? category.shelfLocation : '-'}"></td>
                                 <td th:text="${category.createdAt != null ? #temporals.format(category.createdAt, 'yyyy-MM-dd') : '-'}"></td>
                                 <td class="text-center">
                                     <a class="btn btn-sm btn-warning"

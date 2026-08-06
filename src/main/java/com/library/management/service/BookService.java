@@ -13,4 +13,5 @@ public interface BookService {
     void deleteBook(Integer id);
     List<Book> searchBooksByTitle(String title);
     List<Book> getBooksByCategory(Integer categoryId);
+    
 }

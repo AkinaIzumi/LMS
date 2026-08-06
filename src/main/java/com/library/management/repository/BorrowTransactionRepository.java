@@ -4,6 +4,7 @@ import com.library.management.entity.BorrowTransaction;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @Repository
@@ -14,4 +15,6 @@ public interface BorrowTransactionRepository extends JpaRepository<BorrowTransac
     List<BorrowTransaction> findByBookId(Integer bookId);
 
     List<BorrowTransaction> findByStatus(String status);
+
+    List<BorrowTransaction> findByDueDateBeforeAndStatus(LocalDate date, String status);
 }

@@ -31,9 +31,10 @@
                                 <th>Transaction Code</th>
                                 <th>Member Name</th>
                                 <th>Book Title</th>
-                                <th>Type</th>
                                 <th>Status</th>
                                 <th>Transaction Date</th>
+                                <th>Due Date</th>
+                                <th>Fine</th>
                                 <th class="text-center">Action</th>
                             </tr>
                         </thead>
@@ -43,32 +44,35 @@
                                 <td th:text="${tx.transactionCode}"></td>
                                 <td th:text="${tx.member != null ? tx.member.name : '-'}"></td>
                                 <td th:text="${tx.book != null ? tx.book.title : '-'}"></td>
-                                <td>Borrow</td>
                                 <td>
                                     <span class="badge" 
-                                          th:classappend="${tx.status == 'BORROWED' ? 'bg-warning' : 'bg-success'}"
-                                          th:text="${tx.status}"></span>
+                                        th:classappend="${tx.status == 'BORROWED' ? 'bg-warning' : (tx.status == 'OVERDUE' ? 'bg-danger' : 'bg-success')}"
+                                        th:text="${tx.status}"></span>
                                 </td>
                                 <td th:text="${tx.borrowDate != null ? tx.borrowDate : '-'}"></td>
+                                <td th:text="${tx.dueDate != null ? tx.dueDate : '-'}"></td>
+                                <td>
+                                    <span th:text="${tx.fine != null ? tx.fine : 0.0}" 
+                                        th:class="${tx.fine > 0 ? 'text-danger fw-bold' : ''}">
+                                    </span>
+                                </td>
                                 <td class="text-center">
-                                    <!-- View Action -->
-                                    <a class="btn btn-sm btn-info text-white"
-                                       th:href="@{/transactions/detail/{id}(id=${tx.id})}" title="View">
-                                        <i class="bi bi-eye"></i>
-                                    </a>
-                                    
-                                    <!-- Edit Action -->
-                                    <a class="btn btn-sm btn-warning"
-                                       th:href="@{/transactions/edit/{id}(id=${tx.id})}" title="Edit">
-                                        <i class="bi bi-pencil"></i>
-                                    </a>
+                                
+									<a class="btn btn-sm btn-info text-white"
+									th:href="@{/transactions/detail/{id}(id=${tx.id})}" title="View">
+										<i class="bi bi-eye"></i>
+									</a>
 
-                                    <!-- Delete Form -->
-                                    <form th:action="@{/transactions/delete/{id}(id=${tx.id})}" method="post" class="d-inline" onsubmit="return confirm('Are you sure you want to delete this transaction?');">
-                                        <button type="submit" class="btn btn-sm btn-danger" title="Delete">
-                                            <i class="bi bi-trash"></i>
-                                        </button>
-                                    </form>
+									<a class="btn btn-sm btn-warning"
+									th:href="@{/transactions/edit/{id}(id=${tx.id})}" title="Edit">
+										<i class="bi bi-pencil"></i>
+									</a>
+                                    <button type="button" class="btn btn-sm btn-success" 
+                                            th:if="${tx.status == 'BORROWED' or tx.status == 'OVERDUE'}" 
+                                            th:onclick="returnBook([[${tx.id}]])" 
+                                            title="Return Book">
+                                        <i class="bi bi-arrow-return-left"></i> Return
+                                    </button>
                                 </td>
                             </tr>
                         </tbody>
@@ -95,12 +99,35 @@
                 columnDefs: [
                     {
                         orderable: false,
-                        targets: 7 // Action column index (0-based: 7th column)
+                        targets: -1 
                     }
                 ]
             });
         }
     });
+    </script>
+
+    <!-- Return Book AJAX Function -->
+    <script>
+    async function returnBook(id) {
+        if (!confirm('Are you sure to return this book?')) return;
+
+        try {
+            const response = await fetch(`/api/transactions/return/${id}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' }
+            });
+
+            if (response.ok) {
+                window.location.reload(); 
+            } else {
+                alert("Failed to return the book.");
+            }
+        } catch (error) {
+            console.error("Error:", error);
+            alert("An error occurred.");
+        }
+    }
     </script>
     
 </body>

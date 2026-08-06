@@ -36,6 +36,9 @@ public class Category {
 	@Column(length = 255)
 	private String description;
 
+	@Column(name = "shelf_location", length = 100)
+    private String shelfLocation;
+
 	@CreationTimestamp
 	@Column(name = "created_at", nullable = false, updatable = false)
 	private LocalDateTime createdAt;
@@ -48,9 +51,9 @@ public class Category {
 	@ToString.Exclude
 	private List<Book> books;
 
-	// Custom constructor matching your original manual constructor (excluding id and timestamps)
-	public Category(String name, String description) {
+	public Category(String name, String description, String shelfLocation) {
 		this.name = name;
 		this.description = description;
+		this.shelfLocation = shelfLocation;
 	}
 }
