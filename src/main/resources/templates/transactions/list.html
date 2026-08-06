@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{layout/master :: head('Transactions')}"></head>
+
+<body>
+    <div class="app-shell">
+        <div th:replace="~{layout/sidebar :: sidebar('transactions')}"></div>
+        <main class="main-area">
+            <div th:replace="~{layout/navbar :: navbar('Transactions')}"></div>
+            <div class="content-wrap">
+                <nav>
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a href="/dashboard">Dashboard</a></li>
+                        <li class="breadcrumb-item active">Transactions</li>
+                    </ol>
+                </nav>
+                <div class="page-card p-3">
+            
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h1 class="h4 mb-0">Transactions</h1>
+                        <a class="btn btn-matcha" href="/transactions/borrow">
+                            <i class="bi bi-plus-lg me-1"></i>Borrow Transaction
+                        </a>
+                    </div>
+                    
+                    <table class="table table-striped table-bordered datatable w-100">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Transaction Code</th>
+                                <th>Member Name</th>
+                                <th>Book Title</th>
+                                <th>Type</th>
+                                <th>Status</th>
+                                <th>Transaction Date</th>
+                                <th class="text-center">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="tx : ${transactions}">
+                                <td th:text="${tx.id}"></td>
+                                <td th:text="${tx.transactionCode}"></td>
+                                <td th:text="${tx.member != null ? tx.member.name : '-'}"></td>
+                                <td th:text="${tx.book != null ? tx.book.title : '-'}"></td>
+                                <td>Borrow</td>
+                                <td>
+                                    <span class="badge" 
+                                          th:classappend="${tx.status == 'BORROWED' ? 'bg-warning' : 'bg-success'}"
+                                          th:text="${tx.status}"></span>
+                                </td>
+                                <td th:text="${tx.borrowDate != null ? tx.borrowDate : '-'}"></td>
+                                <td class="text-center">
+                                    <!-- View Action -->
+                                    <a class="btn btn-sm btn-info text-white"
+                                       th:href="@{/transactions/detail/{id}(id=${tx.id})}" title="View">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+                                    
+                                    <!-- Edit Action -->
+                                    <a class="btn btn-sm btn-warning"
+                                       th:href="@{/transactions/edit/{id}(id=${tx.id})}" title="Edit">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+
+                                    <!-- Delete Form -->
+                                    <form th:action="@{/transactions/delete/{id}(id=${tx.id})}" method="post" class="d-inline" onsubmit="return confirm('Are you sure you want to delete this transaction?');">
+                                        <button type="submit" class="btn btn-sm btn-danger" title="Delete">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div th:replace="~{layout/footer :: footer}"></div>
+            </div>
+        </main>
+    </div>
+    
+    <!-- DataTables CSS & JS Dependencies -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.8/css/dataTables.bootstrap5.min.css">
+    
+    <div th:replace="~{layout/master :: scripts}"></div>
+
+    <!-- DataTable Initialization Script -->
+    <script>
+    $(function () {
+        if (!$.fn.DataTable.isDataTable('.datatable')) {
+            $('.datatable').DataTable({
+                responsive: true,
+                autoWidth: false,
+                pageLength: 10,
+                columnDefs: [
+                    {
+                        orderable: false,
+                        targets: 7 // Action column index (0-based: 7th column)
+                    }
+                ]
+            });
+        }
+    });
+    </script>
+    
+</body>
+
+</html>

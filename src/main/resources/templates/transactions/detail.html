@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{layout/master :: head('Transaction Detail')}"></head>
+
+<body>
+	<div class="app-shell">
+		<div th:replace="~{layout/sidebar :: sidebar('transactions')}"></div>
+		<main class="main-area">
+			<div th:replace="~{layout/navbar :: navbar('Transaction Detail')}"></div>
+			<div class="content-wrap">
+				<nav>
+					<ol class="breadcrumb">
+						<li class="breadcrumb-item"><a href="/dashboard">Dashboard</a></li>
+						<li class="breadcrumb-item"><a href="/transactions">Transactions</a></li>
+						<li class="breadcrumb-item active">Detail</li>
+					</ol>
+				</nav>
+				<div class="page-card p-4 mb-3">
+					<div class="row g-3">
+						<div class="col-md-3">
+							<div class="text-muted">Transaction ID</div>
+							<div class="fw-bold">TRX-001</div>
+						</div>
+						<div class="col-md-3">
+							<div class="text-muted">Member</div>
+							<div class="fw-bold">Aye Chan</div>
+						</div>
+						<div class="col-md-2">
+							<div class="text-muted">Borrow Date</div>
+							<div class="fw-bold">2026-07-20</div>
+						</div>
+						<div class="col-md-2">
+							<div class="text-muted">Due Date</div>
+							<div class="fw-bold">2026-07-27</div>
+						</div>
+						<div class="col-md-2">
+							<div class="text-muted">Status</div><span class="badge badge-borrowed">Borrowed</span>
+						</div>
+					</div>
+				</div>
+				<div class="page-card p-3">
+					<table class="table align-middle datatable">
+						<thead>
+							<tr>
+								<th>Book</th>
+								<th>Borrow Date</th>
+								<th>Due Date</th>
+								<th>Return Date</th>
+								<th>Status</th>
+								<th>Action</th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr>
+								<td>Effective Java</td>
+								<td>2026-07-20</td>
+								<td>2026-07-27</td>
+								<td>-</td>
+								<td><span class="badge badge-borrowed">Borrowed</span></td>
+								<td>
+									<!-- Return / Borrow (Back arrow) -->
+									<button
+									    class="btn btn-sm btn-success return-btn"
+									    data-bs-toggle="modal"
+									    data-bs-target="#returnModal"
+									    data-book="Effective Java">
+									    <i class="bi bi-arrow-return-left"></i>
+									</button>
+								</td>
+							</tr>
+							<tr>
+								<td>Clean Code</td>
+								<td>2026-07-20</td>
+								<td>2026-07-27</td>
+								<td>2026-07-25</td>
+								<td><span class="badge badge-returned">Returned</span></td>
+								<td>
+									<!-- Return / Borrow (Back arrow) -->
+									<button
+									    class="btn btn-sm btn-success return-btn"
+									    data-bs-toggle="modal"
+									    data-bs-target="#returnModal"
+									    data-book="Clean Code">
+									    <i class="bi bi-arrow-return-left"></i>
+									</button>
+								</td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
+				<div th:replace="~{layout/footer :: footer}"></div>
+			</div>
+		</main>
+	</div>
+	<div th:replace="~{layout/return-modal :: returnModal}"></div>
+	<div th:replace="~{layout/master :: scripts}"></div>
+</body>
+
+</html>

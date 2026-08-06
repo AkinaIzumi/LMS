@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout/master :: head('Dashboard')}"></head>
+<body>
+<div class="app-shell">
+  <div th:replace="~{layout/sidebar :: sidebar('dashboard')}"></div>
+  <main class="main-area">
+    <div th:replace="~{layout/navbar :: navbar('Dashboard')}"></div>
+    <div class="content-wrap">
+      <nav aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item active">Dashboard</li></ol></nav>
+      <div class="row g-3 mb-4">
+        <div class="col-sm-6 col-xl-3"><div class="stat-card p-3 d-flex align-items-center gap-3"><div class="stat-icon"><i class="bi bi-book"></i></div><div><div class="text-muted">Total Books</div><div class="h3 mb-0">250</div><small>Books</small></div></div></div>
+        <div class="col-sm-6 col-xl-3"><div class="stat-card p-3 d-flex align-items-center gap-3"><div class="stat-icon"><i class="bi bi-people"></i></div><div><div class="text-muted">Total Members</div><div class="h3 mb-0">120</div><small>Members</small></div></div></div>
+        <div class="col-sm-6 col-xl-3"><div class="stat-card p-3 d-flex align-items-center gap-3"><div class="stat-icon"><i class="bi bi-arrow-left-right"></i></div><div><div class="text-muted">Borrowed Books</div><div class="h3 mb-0">50</div><small>Borrowed</small></div></div></div>
+        <div class="col-sm-6 col-xl-3"><div class="stat-card p-3 d-flex align-items-center gap-3"><div class="stat-icon"><i class="bi bi-exclamation-triangle"></i></div><div><div class="text-muted">Overdue Books</div><div class="h3 mb-0">10</div><small>Overdue</small></div></div></div>
+      </div>
+      <div class="d-flex flex-wrap gap-2 mb-4">
+        <a class="btn btn-matcha" href="/books/create"><i class="bi bi-plus-lg me-1"></i>Add Book</a>
+        <a class="btn btn-matcha" href="/members/create"><i class="bi bi-person-plus me-1"></i>Add Member</a>
+        <a class="btn btn-primary" href="/transactions/borrow"><i class="bi bi-arrow-repeat me-1"></i>Borrow Book</a>
+      </div>
+      <section class="page-card p-3">
+        <h2 class="h5 fw-bold mb-3">Recent Borrow Transactions</h2>
+        <div class="table-responsive">
+          <table class="table align-middle datatable">
+            <thead><tr><th>Member</th><th>Book</th><th>Borrow Date</th><th>Due Date</th><th>Status</th></tr></thead>
+            <tbody>
+              <tr><td>Aye Chan</td><td>Java Programming</td><td>2026-07-20</td><td>2026-07-27</td><td><span class="badge badge-borrowed">Borrowed</span></td></tr>
+              <tr><td>Mg Min</td><td>Clean Code</td><td>2026-07-12</td><td>2026-07-19</td><td><span class="badge badge-overdue">Overdue</span></td></tr>
+              <tr><td>Su Mon</td><td>Database Design</td><td>2026-07-08</td><td>2026-07-15</td><td><span class="badge badge-returned">Returned</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+      <div th:replace="~{layout/footer :: footer}"></div>
+    </div>
+  </main>
+</div>
+<div th:replace="~{layout/master :: scripts}"></div>
+</body>
+</html>

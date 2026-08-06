@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{layout/master :: head('Edit Category')}"></head>
+
+<body>
+<div class="app-shell">
+
+    <div th:replace="~{layout/sidebar :: sidebar('categories')}"></div>
+
+    <main class="main-area">
+
+        <div th:replace="~{layout/navbar :: navbar('Edit Category')}"></div>
+
+        <div class="content-wrap">
+
+            <nav>
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="/dashboard">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a href="/categories">Categories</a></li>
+                    <li class="breadcrumb-item active">Edit</li>
+                </ol>
+            </nav>
+
+            <div class="page-card p-4">
+                <h1 class="h4 mb-4">Edit Category</h1>
+
+                <!-- id="categoryForm" ထည့်သွင်းထားပါသည် -->
+                <form id="categoryForm" th:object="${category}">
+                    
+                    <!-- Update အတွက် ID ကို သိမ်းဆည်းရန် Hidden Input ထည့်ပေးပါ -->
+                    <input type="hidden" id="categoryId" th:field="*{id}">
+
+                    <div class="mb-3">
+                        <label for="name" class="form-label">Category Name</label>
+                        <input type="text" id="name" th:field="*{name}" class="form-control" placeholder="Enter Category Name" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="description" class="form-label">Description</label>
+                        <textarea id="description" th:field="*{description}" class="form-control" rows="3" placeholder="Enter Description"></textarea>
+                    </div>
+
+                    <div class="mt-4">
+                        <button type="submit" class="btn btn-warning text-dark">
+                            <i class="bi bi-save"></i> Update
+                        </button>
+                        <a href="/categories" class="btn btn-secondary">Cancel</a>
+                    </div>
+
+                </form>
+            </div>
+
+            <div th:replace="~{layout/footer :: footer}"></div>
+
+        </div>
+
+    </main>
+
+</div>
+
+<div th:replace="~{layout/master :: scripts}"></div>
+
+<!-- JavaScript Event Listener -->
+<script>
+document.getElementById("categoryForm").addEventListener("submit", async function(e) {
+    e.preventDefault();
+
+    const categoryId = document.getElementById("categoryId")?.value;
+    const category = {
+        name: document.getElementById("name").value,
+        description: document.getElementById("description").value
+    };
+
+    // ID ရှိလျှင် Update (PUT)၊ မရှိလျှင် Create (POST)
+    const url = categoryId ? `/api/categories/${categoryId}` : "/api/categories";
+    const method = categoryId ? "PUT" : "POST"; // အဓိက ပြင်ဆင်ရန် နေရာ
+
+    try {
+        const response = await fetch(url, {
+            method: method,
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(category)
+        });
+
+        if (response.ok) {
+            const successMsg = categoryId ? "Category updated successfully." : "Category created successfully.";
+            alert(successMsg);
+            window.location.href = "/categories";
+        } else {
+            alert("Operation failed. Status: " + response.status);
+        }
+    } catch (error) {
+        console.error("Error:", error);
+        alert("An error occurred.");
+    }
+});
+</script>
+
+</body>
+</html>

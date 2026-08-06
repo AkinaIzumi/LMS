@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{layout/master :: head('Categories')}"></head>
+
+<body>
+    <div class="app-shell">
+        <div th:replace="~{layout/sidebar :: sidebar('categories')}"></div>
+        <main class="main-area">
+            <div th:replace="~{layout/navbar :: navbar('Categories')}"></div>
+            <div class="content-wrap">
+                <nav>
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a href="/dashboard">Dashboard</a></li>
+                        <li class="breadcrumb-item active">Categories</li>
+                    </ol>
+                </nav>
+                <div class="page-card p-3">
+            
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h1 class="h4 mb-0">Categories</h1>
+                        <a class="btn btn-matcha" href="/categories/create">
+                            <i class="bi bi-plus-lg me-1"></i>Create
+                        </a>
+                    </div>
+                    
+                    <table class="table table-striped table-bordered datatable w-100">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Name</th>
+                                <th>Description</th>
+                                <th>Created Date</th>
+                                <th class="text-center">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="category : ${categories}">
+                                <td th:text="${category.id}"></td>
+                                <td th:text="${category.name}"></td>
+                                <td th:text="${category.description}"></td>
+                                <td th:text="${category.createdAt != null ? #temporals.format(category.createdAt, 'yyyy-MM-dd') : '-'}"></td>
+                                <td class="text-center">
+                                    <a class="btn btn-sm btn-warning"
+                                    th:href="@{/categories/edit/{id}(id=${category.id})}">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+
+                                    <!-- Delete Form with Confirmation -->
+                                    <form th:action="@{/categories/delete/{id}(id=${category.id})}" method="post" class="d-inline" onsubmit="return confirm('Are you sure you want to delete this category?');">
+                                        <button type="submit" class="btn btn-sm btn-danger" title="Delete">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div th:replace="~{layout/footer :: footer}"></div>
+            </div>
+        </main>
+    </div>
+    
+    <!-- DataTables CSS & JS Dependencies -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.8/css/dataTables.bootstrap5.min.css">
+    
+    <div th:replace="~{layout/master :: scripts}"></div>
+
+    <!-- DataTable Initialization Script -->
+    <script>
+    $(function () {
+        if (!$.fn.DataTable.isDataTable('.datatable')) {
+            $('.datatable').DataTable({
+                responsive: true,
+                autoWidth: false,
+                pageLength: 10,
+                columnDefs: [
+                    {
+                        orderable: false,
+                        targets: 4 
+                    }
+                ]
+            });
+        }
+    });
+    </script>
+    
+</body>
+
+</html>

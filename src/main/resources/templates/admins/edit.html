@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{layout/master :: head('Edit Admin')}"></head>
+
+<body>
+	<div class="app-shell">
+		<div th:replace="~{layout/sidebar :: sidebar('admins')}"></div>
+		<main class="main-area">
+			<div th:replace="~{layout/navbar :: navbar('Edit Admin')}"></div>
+			<div class="content-wrap">
+				<nav>
+					<ol class="breadcrumb">
+						<li class="breadcrumb-item"><a href="/dashboard">Dashboard</a></li>
+						<li class="breadcrumb-item"><a href="/admins">Admins</a></li>
+						<li class="breadcrumb-item active">Edit</li>
+					</ol>
+				</nav>
+				<form class="page-card p-4">
+					<h1 class="h4 mb-3">Edit Admin</h1>
+					<div class="row g-3">
+						<div class="col-md-6"><label class="form-label">Name</label><input class="form-control"
+								value="Admin User"></div>
+						<div class="col-md-6"><label class="form-label">Email</label><input class="form-control"
+								value="admin@school.edu"></div>
+						<div class="col-md-6"><label class="form-label">Role</label><select class="form-select">
+								<option selected>Admin</option>
+							</select></div>
+					</div>
+					<div class="mt-4"><button class="btn btn-matcha">Save</button> <a class="btn btn-light"
+							href="/admins">Cancel</a></div>
+				</form>
+				<div th:replace="~{layout/footer :: footer}"></div>
+			</div>
+		</main>
+	</div>
+	<div th:replace="~{layout/master :: scripts}"></div>
+</body>
+
+</html>

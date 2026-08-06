@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{layout/master :: head('Edit Member')}"></head>
+
+<body>
+<div class="app-shell">
+
+    <div th:replace="~{layout/sidebar :: sidebar('members')}"></div>
+
+    <main class="main-area">
+
+        <div th:replace="~{layout/navbar :: navbar('Edit Member')}"></div>
+
+        <div class="content-wrap">
+
+            <nav>
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="/dashboard">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a href="/members">Members</a></li>
+                    <li class="breadcrumb-item active">Edit</li>
+                </ol>
+            </nav>
+
+            <div class="page-card p-4">
+                <h1 class="h4 mb-4">Edit Member</h1>
+
+                <form id="memberForm" th:object="${member}">
+                    
+                    <!-- Update အတွက် ID ကို သိမ်းဆည်းရန် Hidden Input -->
+                    <input type="hidden" id="memberId" th:field="*{id}">
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="memberCode" class="form-label">Member Code</label>
+                            <input type="text" id="memberCode" th:field="*{memberCode}" class="form-control" placeholder="Enter member code" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="name" class="form-label">Name</label>
+                            <input type="text" id="name" th:field="*{name}" class="form-control" placeholder="Enter name" required>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="phone" class="form-label">Phone</label>
+                            <input type="text" id="phone" th:field="*{phone}" class="form-control" placeholder="Enter phone" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="email" class="form-label">Email</label>
+                            <input type="email" id="email" th:field="*{email}" class="form-control" placeholder="Enter email" required>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="address" class="form-label">Address</label>
+                        <textarea id="address" th:field="*{address}" class="form-control" rows="2" placeholder="Enter address"></textarea>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label for="memberType" class="form-label">Member Type</label>
+                            <select id="memberType" th:field="*{memberType}" class="form-select" required>
+                                <option value="">Select Type</option>
+                                <option value="Student">Student</option>
+                                <option value="Teacher">Teacher</option>
+                                <option value="General">General</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label for="status" class="form-label">Status</label>
+                            <select id="status" th:field="*{status}" class="form-select" required>
+                                <option value="ACTIVE">ACTIVE</option>
+                                <option value="INACTIVE">INACTIVE</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label for="registeredDate" class="form-label">Registered Date</label>
+                            <input type="date" id="registeredDate" th:field="*{registeredDate}" class="form-control" required>
+                        </div>
+                    </div>
+
+                    <div class="mt-4">
+                        <button type="submit" class="btn btn-warning text-dark">
+                            <i class="bi bi-save me-1"></i> Update
+                        </button>
+                        <a href="/members" class="btn btn-secondary">Cancel</a>
+                    </div>
+
+                </form>
+            </div>
+
+            <div th:replace="~{layout/footer :: footer}"></div>
+
+        </div>
+
+    </main>
+
+</div>
+
+<div th:replace="~{layout/master :: scripts}"></div>
+
+<!-- JavaScript Event Listener -->
+<script>
+document.getElementById("memberForm").addEventListener("submit", async function(e) {
+    e.preventDefault();
+
+    const memberId = document.getElementById("memberId")?.value;
+    const member = {
+        memberCode: document.getElementById("memberCode").value,
+        name: document.getElementById("name").value,
+        phone: document.getElementById("phone").value,
+        email: document.getElementById("email").value,
+        address: document.getElementById("address").value,
+        memberType: document.getElementById("memberType").value,
+        status: document.getElementById("status").value,
+        registeredDate: document.getElementById("registeredDate").value
+    };
+
+    const url = memberId ? `/api/members/${memberId}` : "/api/members";
+    const method = memberId ? "PUT" : "POST";
+
+    try {
+        const response = await fetch(url, {
+            method: method,
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(member)
+        });
+
+        if (response.ok) {
+            const successMsg = memberId ? "Member updated successfully." : "Member created successfully.";
+            alert(successMsg);
+            window.location.href = "/members";
+        } else {
+            alert("Operation failed. Status: " + response.status);
+        }
+    } catch (error) {
+        console.error("Error:", error);
+        alert("An error occurred.");
+    }
+});
+</script>
+
+</body>
+</html>

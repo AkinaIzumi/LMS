@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{layout/master :: head('Borrow Book')}"></head>
+
+<body>
+    <div class="app-shell">
+        <!-- Sidebar -->
+        <div th:replace="~{layout/sidebar :: sidebar('transactions')}"></div>
+
+        <main class="main-area">
+            <!-- Navbar -->
+            <div th:replace="~{layout/navbar :: navbar('Borrow Book')}"></div>
+
+            <div class="content-wrap">
+                <!-- Breadcrumb -->
+                <nav>
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a href="/dashboard">Dashboard</a></li>
+                        <li class="breadcrumb-item"><a href="/transactions">Transactions</a></li>
+                        <li class="breadcrumb-item active">Borrow Book</li>
+                    </ol>
+                </nav>
+
+                <!-- Card -->
+                <div class="page-card p-4">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h2 class="h4 mb-0">New Book Borrow Transaction</h2>
+                    </div>
+
+                    <form id="borrowForm">
+                        <div class="row">
+                            <!-- Select Member -->
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Member <span class="text-danger">*</span></label>
+                                <select id="memberId" class="form-select" required>
+                                    <option value="">-- Select Member --</option>
+                                    <option th:each="m : ${members}" 
+                                            th:value="${m.id}" 
+                                            th:text="${m.memberCode + ' - ' + m.name}">
+                                    </option>
+                                </select>
+                            </div>
+
+                            <!-- Select Book -->
+						<div class="col-md-6 mb-3">
+							<label class="form-label">Book <span class="text-danger">*</span></label>
+							<select id="bookId" class="form-select" required>
+								<option value="">-- Select Book --</option>
+								<!-- b.bookCode အစား b.isbn သို့မဟုတ် b.title ကို ပြောင်းသုံးပါ -->
+								<option th:each="b : ${books}" 
+										th:value="${b.id}" 
+										th:text="${b.isbn + ' - ' + b.title}">
+								</option>
+							</select>
+						</div>
+                        </div>
+
+                        <div class="row">
+                            <!-- Transaction Code -->
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Transaction Code <span class="text-danger">*</span></label>
+                                <input type="text" id="transactionCode" class="form-control" placeholder="Enter transaction code" required>
+                            </div>
+
+							<div class="col-md-4 mb-3">
+								<label class="form-label">Borrow Date <span class="text-danger">*</span></label>
+								<input type="date" id="borrowDate" class="form-control" required>
+							</div>
+                            <!-- Due Date -->
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Due Date <span class="text-danger">*</span></label>
+                                <input type="date" id="dueDate" class="form-control" required>
+                            </div>
+                        </div>
+						<div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Status <span class="text-danger">*</span></label>
+                                <select id="status" class="form-select" required>
+                                    <option value="BORROWED">Borrowed</option>
+                                    <option value="PENDING">Pending</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Remarks / Notes</label>
+                            <textarea id="remarks" class="form-control" rows="3" placeholder="Optional notes..."></textarea>
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="d-flex gap-2 mt-3">
+                            <button type="submit" class="btn btn-matcha">
+                                <i class="bi bi-check-circle me-1"></i>Save Borrow Record
+                            </button>
+                            <a href="/transactions" class="btn btn-secondary">
+                                <i class="bi bi-arrow-left me-1"></i>Cancel
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Scripts -->
+    <div th:replace="~{layout/master :: scripts}"></div>
+
+    <script>
+		document.getElementById("borrowForm").addEventListener("submit", async function(e) {
+    e.preventDefault();
+
+    const transaction = {
+        transactionCode: document.getElementById("transactionCode").value,
+        borrowDate: document.getElementById("borrowDate").value, // 👈 ဤနေရာကို ဖြည့်စွက်ပါ
+        dueDate: document.getElementById("dueDate").value,
+        remarks: document.getElementById("remarks").value,
+		status: document.getElementById("status").value,
+        member: {
+            id: document.getElementById("memberId").value
+        },
+        book: {
+            id: document.getElementById("bookId").value
+        }
+    };
+
+    const response = await fetch("/api/transactions", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify(transaction)
+    });
+
+    if (response.ok) {
+        alert("Borrow transaction created successfully.");
+        window.location.href = "/transactions/list";
+    } else {
+        alert("Failed to create borrow transaction.");
+    }
+});
+   </script>
+</body>
+
+</html>

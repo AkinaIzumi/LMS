@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{layout/master :: head('Create Member')}"></head>
+
+<body>
+
+<div class="app-shell">
+
+    <!-- Sidebar -->
+    <div th:replace="~{layout/sidebar :: sidebar('members')}"></div>
+
+    <main class="main-area">
+
+        <!-- Navbar -->
+        <div th:replace="~{layout/navbar :: navbar('Create Member')}"></div>
+
+        <div class="content-wrap">
+
+            <!-- Breadcrumb -->
+            <nav>
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item">
+                        <a href="/dashboard">Dashboard</a>
+                    </li>
+                    <li class="breadcrumb-item">
+                        <a href="/members">Members</a>
+                    </li>
+                    <li class="breadcrumb-item active">
+                        Create
+                    </li>
+                </ol>
+            </nav>
+
+            <!-- Card -->
+            <div class="page-card p-4">
+
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h2 class="h4 mb-0">Create Member</h2>
+                </div>
+
+                <form id="memberForm">
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Member Code</label>
+                            <input type="text" id="memberCode" class="form-control" placeholder="Enter member code" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Name</label>
+                            <input type="text" id="name" class="form-control" placeholder="Enter name" required>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Phone</label>
+                            <input type="text" id="phone" class="form-control" placeholder="Enter phone" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Email</label>
+                            <input type="email" id="email" class="form-control" placeholder="Enter email" required>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Address</label>
+                        <textarea id="address" class="form-control" rows="2" placeholder="Enter address"></textarea>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Member Type</label>
+                            <select id="memberType" class="form-select" required>
+                                <option value="">Select Type</option>
+                                <option value="Student">Student</option>
+                                <option value="Teacher">Teacher</option>
+                                <option value="General">General</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Status</label>
+                            <select id="status" class="form-select" required>
+                                <option value="ACTIVE">ACTIVE</option>
+                                <option value="INACTIVE">INACTIVE</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Registered Date</label>
+                            <input type="date" id="registeredDate" class="form-control" required>
+                        </div>
+                    </div>
+
+                    <div class="d-flex gap-2 mt-3">
+
+                        <button type="submit" class="btn btn-matcha">
+                            <i class="bi bi-check-circle me-1"></i>
+                            Save
+                        </button>
+
+                        <a href="/members" class="btn btn-secondary">
+                            <i class="bi bi-arrow-left me-1"></i>
+                            Back
+                        </a>
+
+                    </div>
+
+                </form>
+
+            </div>
+
+        </div>
+
+    </main>
+
+</div>
+
+<!-- Scripts -->
+<div th:replace="~{layout/master :: scripts}"></div>
+
+<script>
+document.getElementById("memberForm").addEventListener("submit", async function(e) {
+
+    e.preventDefault();
+
+    const member = {
+        memberCode: document.getElementById("memberCode").value,
+        name: document.getElementById("name").value,
+        phone: document.getElementById("phone").value,
+        email: document.getElementById("email").value,
+        address: document.getElementById("address").value,
+        memberType: document.getElementById("memberType").value,
+        status: document.getElementById("status").value,
+        registeredDate: document.getElementById("registeredDate").value
+    };
+
+    const response = await fetch("/api/members", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify(member)
+    });
+
+    if (response.ok) {
+        alert("Member created successfully.");
+        window.location.href = "/members";
+    } else {
+        alert("Failed to create member.");
+    }
+
+});
+</script>
+
+</body>
+</html>

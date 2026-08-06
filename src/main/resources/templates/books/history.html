@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{layout/master :: head('Book History')}"></head>
+
+<body>
+	<div class="app-shell">
+		<div th:replace="~{layout/sidebar :: sidebar('books')}"></div>
+		<main class="main-area">
+			<div th:replace="~{layout/navbar :: navbar('Book History')}"></div>
+			<div class="content-wrap">
+				<nav>
+					<ol class="breadcrumb">
+						<li class="breadcrumb-item"><a href="/dashboard">Dashboard</a></li>
+						<li class="breadcrumb-item"><a href="/books">Books</a></li>
+						<li class="breadcrumb-item active">History</li>
+					</ol>
+				</nav>
+				<div class="page-card p-3">
+					<h1 class="h4">Book: Java Programming</h1>
+					<table class="table align-middle datatable">
+						<thead>
+							<tr>
+								<th>Member</th>
+								<th>Borrow Date</th>
+								<th>Due Date</th>
+								<th>Return Date</th>
+								<th>Remarks</th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr>
+								<td>Aye Chan</td>
+								<td>2026-07-01</td>
+								<td>2026-07-08</td>
+								<td>2026-07-08</td>
+								<td>Returned in good condition</td>
+							</tr>
+							<tr>
+								<td>Mg Min</td>
+								<td>2026-07-12</td>
+								<td>2026-07-19</td>
+								<td>-</td>
+								<td>Currently borrowed</td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
+				<div th:replace="~{layout/footer :: footer}"></div>
+			</div>
+		</main>
+	</div>
+	<div th:replace="~{layout/master :: scripts}"></div>
+</body>
+
+</html>
