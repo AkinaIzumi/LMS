@@ -19,7 +19,7 @@ public class EmailService {
             "Your borrowed book \"" + bookTitle + "\" was due on " + dueDate + ".\n" +
             "It is now overdue. A late fine of " + fineAmount + " MMK has been charged.\n\n" +
             "Please return the book as soon as possible.\n\n" +
-            "Best regards,\nLibrary Management System");
+            "Best regards,\nUCSP Library Management System");
     
     mailSender.send(message);
 }

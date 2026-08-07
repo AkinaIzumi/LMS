@@ -2,6 +2,7 @@ package com.library.management.service;
 
 import com.library.management.entity.BorrowTransaction;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -20,4 +21,6 @@ public interface BorrowTransactionService {
     List<BorrowTransaction> getTransactionsByMember(Integer memberId);
 
     void returnBook(Integer transactionId);
+
+    List<BorrowTransaction> findByDueDateBeforeAndStatus(LocalDate date, String status);
 }

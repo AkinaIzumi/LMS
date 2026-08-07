@@ -68,10 +68,6 @@ public class BorrowTransaction {
 
     @OneToMany(mappedBy = "borrowTransaction")
     @ToString.Exclude
-    private List<BorrowTransactionItem> borrowTransactionItems;
-
-    @OneToMany(mappedBy = "borrowTransaction")
-    @ToString.Exclude
     private List<BookHistory> bookHistories;
 
     // Custom constructor matching your original manual constructor (updated with Book)

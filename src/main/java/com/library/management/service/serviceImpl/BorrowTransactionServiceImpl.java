@@ -90,6 +90,7 @@ public class BorrowTransactionServiceImpl implements BorrowTransactionService {
     }
 
    @Override
+    @Transactional 
     public void returnBook(Integer transactionId) {
         BorrowTransaction tx = borrowTransactionRepository.findById(transactionId)
                 .orElseThrow(() -> new RuntimeException("Transaction not found"));
@@ -100,15 +101,19 @@ public class BorrowTransactionServiceImpl implements BorrowTransactionService {
             long daysLate = ChronoUnit.DAYS.between(tx.getDueDate(), today);
             double fineAmount = daysLate * 1000.0;
             tx.setFine(fineAmount);
-            tx.setStatus("OVERDUE");
         } else {
             tx.setFine(0.0);
-            tx.setStatus("RETURNED");
         }
+
+        tx.setStatus("RETURNED");
 
         Book book = tx.getBook();
         if (book != null) {
+
+            book.setAvailableQuantity(book.getAvailableQuantity() + 1);
+
             book.setStatus("AVAILABLE");
+          
             bookRepository.save(book);
         }
 
@@ -123,5 +128,10 @@ public class BorrowTransactionServiceImpl implements BorrowTransactionService {
     @Override
     public List<BorrowTransaction> getTransactionsByMember(Integer memberId) {
         return borrowTransactionRepository.findByMemberId(memberId);
+    }
+
+    @Override
+    public List<BorrowTransaction> findByDueDateBeforeAndStatus(LocalDate date, String status) {
+        return borrowTransactionRepository.findByDueDateBeforeAndStatus(date, status);
     }
 }
