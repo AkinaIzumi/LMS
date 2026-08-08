@@ -43,29 +43,24 @@
 
                     <div class="row">
                         <div class="col-md-6 mb-3">
-                            <label class="form-label">Member Code</label>
-                            <input type="text" id="memberCode" class="form-control" placeholder="Enter member code" required>
-                        </div>
-                        <div class="col-md-6 mb-3">
                             <label class="form-label">Name</label>
                             <input type="text" id="name" class="form-control" placeholder="Enter name" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Phone</label>
+                            <input type="text" id="phone" class="form-control" placeholder="Enter phone" required>
                         </div>
                     </div>
 
                     <div class="row">
                         <div class="col-md-6 mb-3">
-                            <label class="form-label">Phone</label>
-                            <input type="text" id="phone" class="form-control" placeholder="Enter phone" required>
-                        </div>
-                        <div class="col-md-6 mb-3">
                             <label class="form-label">Email</label>
                             <input type="email" id="email" class="form-control" placeholder="Enter email" required>
                         </div>
-                    </div>
-
-                    <div class="mb-3">
-                        <label class="form-label">Address</label>
-                        <textarea id="address" class="form-control" rows="2" placeholder="Enter address"></textarea>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Address</label>
+                            <textarea id="address" class="form-control" rows="2" placeholder="Enter address"></textarea>
+                        </div>
                     </div>
 
                     <div class="row">
@@ -75,34 +70,36 @@
                                 <option value="">Select Type</option>
                                 <option value="Student">Student</option>
                                 <option value="Teacher">Teacher</option>
-                                <option value="General">General</option>
                             </select>
                         </div>
                         <div class="col-md-4 mb-3">
-                            <label class="form-label">Status</label>
+                            <label for="status" class="form-label">Status</label>
                             <select id="status" class="form-select" required>
-                                <option value="ACTIVE">ACTIVE</option>
-                                <option value="INACTIVE">INACTIVE</option>
+                                <option value="active">Active</option>
+                                <option value="warning">Warning</option>
+                                <option value="banned">Banned</option>
+                                <option value="expired">Expired</option>
                             </select>
                         </div>
                         <div class="col-md-4 mb-3">
                             <label class="form-label">Registered Date</label>
                             <input type="date" id="registeredDate" class="form-control" required>
                         </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Expired Date</label>
+                            <input type="date" id="expiredDate" class="form-control" required>
+                        </div>
                     </div>
 
                     <div class="d-flex gap-2 mt-3">
-
                         <button type="submit" class="btn btn-matcha">
                             <i class="bi bi-check-circle me-1"></i>
                             Save
                         </button>
-
                         <a href="/members" class="btn btn-secondary">
                             <i class="bi bi-arrow-left me-1"></i>
                             Back
                         </a>
-
                     </div>
 
                 </form>
@@ -120,35 +117,38 @@
 
 <script>
 document.getElementById("memberForm").addEventListener("submit", async function(e) {
-
     e.preventDefault();
 
     const member = {
-        memberCode: document.getElementById("memberCode").value,
         name: document.getElementById("name").value,
         phone: document.getElementById("phone").value,
         email: document.getElementById("email").value,
         address: document.getElementById("address").value,
         memberType: document.getElementById("memberType").value,
         status: document.getElementById("status").value,
-        registeredDate: document.getElementById("registeredDate").value
+        registeredDate: document.getElementById("registeredDate").value,
+        expiredDate: document.getElementById("expiredDate").value 
     };
 
-    const response = await fetch("/api/members", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json"
-        },
-        body: JSON.stringify(member)
-    });
+    try {
+        const response = await fetch("/api/members", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(member)
+        });
 
-    if (response.ok) {
-        alert("Member created successfully.");
-        window.location.href = "/members";
-    } else {
-        alert("Failed to create member.");
+        if (response.ok) {
+            alert("Member created successfully.");
+            window.location.href = "/members";
+        } else {
+            alert("Failed to create member.");
+        }
+    } catch (error) {
+        console.error("Error:", error);
+        alert("An error occurred.");
     }
-
 });
 </script>
 

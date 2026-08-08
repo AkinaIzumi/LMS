@@ -4,53 +4,111 @@
 <head th:replace="~{layout/master :: head('Book History')}"></head>
 
 <body>
-	<div class="app-shell">
-		<div th:replace="~{layout/sidebar :: sidebar('books')}"></div>
-		<main class="main-area">
-			<div th:replace="~{layout/navbar :: navbar('Book History')}"></div>
-			<div class="content-wrap">
-				<nav>
-					<ol class="breadcrumb">
-						<li class="breadcrumb-item"><a href="/dashboard">Dashboard</a></li>
-						<li class="breadcrumb-item"><a href="/books">Books</a></li>
-						<li class="breadcrumb-item active">History</li>
-					</ol>
-				</nav>
-				<div class="page-card p-3">
-					<h1 class="h4">Book: Java Programming</h1>
-					<table class="table align-middle datatable">
-						<thead>
-							<tr>
-								<th>Member</th>
-								<th>Borrow Date</th>
-								<th>Due Date</th>
-								<th>Return Date</th>
-								<th>Remarks</th>
-							</tr>
-						</thead>
-						<tbody>
-							<tr>
-								<td>Aye Chan</td>
-								<td>2026-07-01</td>
-								<td>2026-07-08</td>
-								<td>2026-07-08</td>
-								<td>Returned in good condition</td>
-							</tr>
-							<tr>
-								<td>Mg Min</td>
-								<td>2026-07-12</td>
-								<td>2026-07-19</td>
-								<td>-</td>
-								<td>Currently borrowed</td>
-							</tr>
-						</tbody>
-					</table>
-				</div>
-				<div th:replace="~{layout/footer :: footer}"></div>
-			</div>
-		</main>
-	</div>
-	<div th:replace="~{layout/master :: scripts}"></div>
-</body>
+<div class="app-shell">
 
+    <div th:replace="~{layout/sidebar :: sidebar('books')}"></div>
+
+    <main class="main-area">
+
+        <div th:replace="~{layout/navbar :: navbar('Book History')}"></div>
+
+        <div class="content-wrap">
+
+            <nav>
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item">
+                        <a href="/dashboard">Dashboard</a>
+                    </li>
+                    <li class="breadcrumb-item">
+                        <a href="/books">Books</a>
+                    </li>
+                    <li class="breadcrumb-item active">History</li>
+                </ol>
+            </nav>
+
+            <div class="page-card p-3">
+
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h1 class="h4 mb-0">📚 Book Borrowing History</h1>
+
+                    <a href="/books" class="btn btn-secondary btn-sm">
+                        <i class="bi bi-arrow-left"></i> Back to Books
+                    </a>
+                </div>
+
+                <table class="table table-striped table-bordered datatable w-100">
+
+                    <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Book Title</th>
+                        <th>Member Name</th>
+                        <th>Borrow Date</th>
+                        <th>Due Date</th>
+                        <th>Return Date</th>
+                        <th>Status</th>
+                        <th>Remarks</th>
+                        <th>Created Date</th>
+                    </tr>
+                    </thead>
+
+                    <tbody>
+                    <tr th:each="history : ${histories}">
+                        <td th:text="${history.id}"></td>
+                        <td th:text="${history.book != null ? history.book.title : '-'}"></td>
+                        <td th:text="${history.member != null ? history.member.name : '-'}"></td>
+                        <td th:text="${history.borrowDate}"></td>
+                        <td th:text="${history.dueDate}"></td>
+                        <td th:text="${history.returnDate != null ? history.returnDate : '-'}"></td>
+                        <td>
+                            <span class="badge"
+                                  th:classappend="${history.status != null && history.status.toUpperCase() == 'BORROWED' ? 'badge-borrowed' : 'badge-available'}"
+                                  th:text="${history.status}">
+                            </span>
+                        </td>
+                        <td th:text="${history.remarks != null ? history.remarks : '-'}"></td>
+                        <td th:text="${history.createdAt != null ? #temporals.format(history.createdAt,'yyyy-MM-dd HH:mm') : '-'}"></td>
+                    </tr>
+                    </tbody>
+
+                </table>
+
+            </div>
+
+            <div th:replace="~{layout/footer :: footer}"></div>
+
+        </div>
+
+    </main>
+
+</div>
+
+    <!-- DataTables CSS & JS Dependencies -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.8/css/dataTables.bootstrap5.min.css">
+    
+    <div th:replace="~{layout/master :: scripts}"></div>
+
+<script th:inline="none">
+$(function () {
+
+    if (!$.fn.DataTable.isDataTable('.datatable')) {
+
+        $('.datatable').DataTable({
+            responsive: true,
+            autoWidth: false,
+            pageLength: 10,
+            columnDefs: [
+                {
+                    orderable: false,
+                    targets: 7 
+                }
+            ]
+        });
+
+    }
+
+});
+</script>
+
+</body>
 </html>

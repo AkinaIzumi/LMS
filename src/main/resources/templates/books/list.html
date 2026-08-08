@@ -43,6 +43,7 @@
                         <th>ISBN</th>
                         <th>Title</th>
                         <th>Author</th>
+                        <th>Price</th>
                         <th>Category</th>
                         <th>Total Qty</th>
                         <th>Available Qty</th> 
@@ -64,6 +65,8 @@
                         <td th:text="${book.title}"></td>
 
                         <td th:text="${book.author}"></td>
+
+                        <td th:text="${book.price}"></td>
 
                         <td th:text="${book.category != null ? book.category.name : '-'}"></td>
 

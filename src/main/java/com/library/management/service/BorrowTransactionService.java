@@ -20,7 +20,7 @@ public interface BorrowTransactionService {
 
     List<BorrowTransaction> getTransactionsByMember(Integer memberId);
 
-    void returnBook(Integer transactionId);
+    void returnBook(Integer transactionId, String returnStatus);
 
     List<BorrowTransaction> findByDueDateBeforeAndStatus(LocalDate date, String status);
 }

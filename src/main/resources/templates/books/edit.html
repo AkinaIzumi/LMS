@@ -25,16 +25,14 @@
             <div class="page-card p-4">
                 <h1 class="h4 mb-4">Edit Book</h1>
 
-                <!-- id="bookForm" ထည့်သွင်းထားပါသည် -->
                 <form id="bookForm" th:object="${book}">
 
-                    <!-- Book ID ကို သိမ်းဆည်းရန် Hidden Input ထည့်သွင်းပါ -->
                     <input type="hidden" id="bookId" th:field="*{id}">
 
                     <div class="row">
                         <div class="col-md-6 mb-3">
                             <label for="isbn" class="form-label">ISBN</label>
-                            <input type="text" id="isbn" th:field="*{isbn}" class="form-control" required>
+                            <input type="text" id="isbn" th:field="*{isbn}" class="form-control" readonly>
                         </div>
 
                         <div class="col-md-6 mb-3">
@@ -47,6 +45,11 @@
                         <div class="col-md-6 mb-3">
                             <label for="author" class="form-label">Author</label>
                             <input type="text" id="author" th:field="*{author}" class="form-control" required>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label for="price" class="form-label">Price (MMK)</label>
+                            <input type="number" step="0.01" class="form-control" id="price" th:field="*{price}" required>
                         </div>
 
                         <div class="col-md-6 mb-3">
@@ -112,6 +115,7 @@ document.getElementById("bookForm").addEventListener("submit", async function(e)
         isbn: document.getElementById("isbn").value,
         title: document.getElementById("title").value,
         author: document.getElementById("author").value,
+        price: document.getElementById("price").value,
         category: {
             id: document.getElementById("category").value
         },

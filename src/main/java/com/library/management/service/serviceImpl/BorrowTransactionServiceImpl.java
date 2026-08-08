@@ -1,7 +1,9 @@
 package com.library.management.service.serviceImpl;
 
 import com.library.management.entity.Book;
+import com.library.management.entity.BookHistory;
 import com.library.management.entity.BorrowTransaction;
+import com.library.management.repository.BookHistoryRepository;
 import com.library.management.repository.BookRepository;
 import com.library.management.repository.BorrowTransactionRepository;
 import com.library.management.service.BookService;
@@ -26,7 +28,8 @@ public class BorrowTransactionServiceImpl implements BorrowTransactionService {
     private BookRepository bookRepository;
 
     @Autowired
-    private BookService bookService;
+    private BookHistoryRepository bookHistoryRepository;
+
     @Override
     public List<BorrowTransaction> getAllTransactions() {
         return borrowTransactionRepository.findAll();
@@ -72,7 +75,7 @@ public class BorrowTransactionServiceImpl implements BorrowTransactionService {
         book.setAvailableQuantity(book.getAvailableQuantity() - 1);
 
         if (book.getAvailableQuantity() == 0) {
-            book.setStatus("BORROWED");
+            book.setStatus("Borrowed");
         }
         
         bookRepository.save(book);
@@ -82,39 +85,71 @@ public class BorrowTransactionServiceImpl implements BorrowTransactionService {
         }
 
         transaction.setBook(book);
-        transaction.setStatus("BORROWED");
+        transaction.setStatus("Borrowed");
         if (transaction.getBorrowDate() == null) {
             transaction.setBorrowDate(LocalDate.now());
         }
-        return borrowTransactionRepository.save(transaction);
+
+        BorrowTransaction savedTransaction = borrowTransactionRepository.save(transaction);
+
+        BookHistory history = new BookHistory();
+        history.setBook(book);
+        history.setMember(transaction.getMember());
+        history.setBorrowTransaction(savedTransaction);
+        history.setBorrowDate(savedTransaction.getBorrowDate());
+        history.setDueDate(savedTransaction.getDueDate()); 
+        
+        history.setStatus("Borrowed"); 
+        
+        history.setRemarks("Book borrowed with code: " + savedTransaction.getTransactionCode());
+        
+        bookHistoryRepository.save(history);
+
+        return savedTransaction;
     }
 
    @Override
     @Transactional 
-    public void returnBook(Integer transactionId) {
+    public void returnBook(Integer transactionId, String returnStatus) {
         BorrowTransaction tx = borrowTransactionRepository.findById(transactionId)
                 .orElseThrow(() -> new RuntimeException("Transaction not found"));
 
         LocalDate today = LocalDate.now();
-
-        if (today.isAfter(tx.getDueDate())) {
-            long daysLate = ChronoUnit.DAYS.between(tx.getDueDate(), today);
-            double fineAmount = daysLate * 1000.0;
-            tx.setFine(fineAmount);
-        } else {
-            tx.setFine(0.0);
-        }
-
-        tx.setStatus("RETURNED");
+        tx.setReturnDate(today); 
 
         Book book = tx.getBook();
-        if (book != null) {
+        double bookPrice = (book != null) ? book.getPrice() : 0.0;
+        LocalDate dueDate = tx.getDueDate();
 
-            book.setAvailableQuantity(book.getAvailableQuantity() + 1);
+        if ("loss or damage".equalsIgnoreCase(returnStatus)) {
+            tx.setStatus("lOSS or DAMAGE");
 
-            book.setStatus("AVAILABLE");
-          
-            bookRepository.save(book);
+            if (today.isAfter(dueDate)) {
+                long overdueDays = ChronoUnit.DAYS.between(dueDate, today);
+                double totalFine = (overdueDays * 1000.0) + bookPrice;
+                tx.setFine(totalFine);
+            } else {
+                tx.setFine(bookPrice); 
+            }
+
+        } 
+
+        else {
+            tx.setStatus("RETURNED");
+
+            if (today.isAfter(dueDate)) {
+                long daysLate = ChronoUnit.DAYS.between(dueDate, today);
+                double fineAmount = daysLate * 1000.0;
+                tx.setFine(fineAmount);
+            } else {
+                tx.setFine(0.0);
+            }
+
+            if (book != null) {
+                book.setAvailableQuantity(book.getAvailableQuantity() + 1);
+                book.setStatus("AVAILABLE");
+                bookRepository.save(book);
+            }
         }
 
         borrowTransactionRepository.save(tx);

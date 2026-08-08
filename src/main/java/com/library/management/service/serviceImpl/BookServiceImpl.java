@@ -40,8 +40,10 @@ public class BookServiceImpl implements BookService {
 
     @Override
     public Book createBook(Book book) {
-        if (bookRepository.existsByIsbn(book.getIsbn())) {
-            throw new RuntimeException("Book with ISBN " + book.getIsbn() + " already exists.");
+        if (book.getIsbn() != null && !book.getIsbn().trim().isEmpty()) {
+            if (bookRepository.existsByIsbn(book.getIsbn())) {
+                throw new RuntimeException("Book with ISBN " + book.getIsbn() + " already exists.");
+            }
         }
         return bookRepository.save(book);
     }
@@ -50,9 +52,9 @@ public class BookServiceImpl implements BookService {
     public Book updateBook(Integer id, Book bookDetails) {
         Book existingBook = getBookById(id);
 
-        existingBook.setIsbn(bookDetails.getIsbn());
         existingBook.setTitle(bookDetails.getTitle());
         existingBook.setAuthor(bookDetails.getAuthor());
+        existingBook.setPrice(bookDetails.getPrice());
         existingBook.setCategory(bookDetails.getCategory());
         existingBook.setTotalQuantity(bookDetails.getTotalQuantity());
         existingBook.setAvailableQuantity(bookDetails.getAvailableQuantity());

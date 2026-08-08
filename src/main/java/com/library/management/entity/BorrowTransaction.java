@@ -3,7 +3,7 @@ package com.library.management.entity;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
-
+import java.util.UUID;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
@@ -15,6 +15,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 
 import lombok.AllArgsConstructor;
@@ -52,6 +53,9 @@ public class BorrowTransaction {
     @Column(name = "due_date", nullable = false)
     private LocalDate dueDate;
 
+    @Column(name = "return_date") 
+    private LocalDate returnDate;
+
     @Column(nullable = false, length = 20)
     private String status;
 
@@ -77,5 +81,21 @@ public class BorrowTransaction {
         this.borrowDate = borrowDate;
         this.dueDate = dueDate;
         this.status = status;
+    }
+
+    @PrePersist
+    public void prePersist() {
+
+        if (this.transactionCode == null || this.transactionCode.isEmpty()) {
+            this.transactionCode = "TRX-" + UUID.randomUUID().toString().substring(0, 6).toUpperCase();
+        }
+
+        if (this.borrowDate == null) {
+            this.borrowDate = LocalDate.now();
+        }
+
+        if (this.status == null || this.status.isEmpty()) {
+            this.status = "BORROWED";
+        }
     }
 }

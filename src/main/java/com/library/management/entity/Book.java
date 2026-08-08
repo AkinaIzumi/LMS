@@ -14,12 +14,15 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
+
+import java.util.UUID;
 
 @Entity
 @Table(name = "books")
@@ -40,6 +43,9 @@ public class Book {
 
     @Column(nullable = false, length = 100)
     private String author;
+
+    @Column(nullable = false)
+    private double price;
 
     @ManyToOne
     @JoinColumn(name = "category_id", nullable = false)
@@ -66,12 +72,22 @@ public class Book {
     @ToString.Exclude
     private List<BookHistory> bookHistories;
 
-    // Custom constructor matching your manual one (excluding auto-generated fields like id, timestamps, and relationships)
-    public Book(String isbn, String title, String author, Category category, Integer totalQuantity,
+    @PrePersist
+    public void prePersist() {
+        if (this.isbn == null || this.isbn.isEmpty()) {
+            this.isbn = "ISBN-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
+        }
+        if (this.availableQuantity == null && this.totalQuantity != null) {
+            this.availableQuantity = this.totalQuantity;
+        }
+    }
+
+    public Book(String isbn, String title, String author,double price, Category category, Integer totalQuantity,
             Integer availableQuantity, String status) {
         this.isbn = isbn;
         this.title = title;
         this.author = author;
+        this.price = price;
         this.category = category;
         this.totalQuantity = totalQuantity;
         this.availableQuantity = availableQuantity;

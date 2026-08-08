@@ -24,7 +24,7 @@ public class OverdueCheckScheduler {
     @Autowired
     private EmailService emailService;
 
-    @Scheduled(cron = "0 0 8 * * ?")
+    @Scheduled(cron = "0 0 9 * * ?")
     public void checkOverdueBooks() {
         LocalDate today = LocalDate.now();
         

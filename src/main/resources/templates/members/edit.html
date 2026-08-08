@@ -26,35 +26,40 @@
                 <h1 class="h4 mb-4">Edit Member</h1>
 
                 <form id="memberForm" th:object="${member}">
-                    
-                    <!-- Update အတွက် ID ကို သိမ်းဆည်းရန် Hidden Input -->
+
                     <input type="hidden" id="memberId" th:field="*{id}">
 
                     <div class="row">
                         <div class="col-md-6 mb-3">
                             <label for="memberCode" class="form-label">Member Code</label>
-                            <input type="text" id="memberCode" th:field="*{memberCode}" class="form-control" placeholder="Enter member code" required>
+                            <input type="text" id="memberCode" th:field="*{memberCode}" class="form-control" readonly>
                         </div>
                         <div class="col-md-6 mb-3">
                             <label for="name" class="form-label">Name</label>
-                            <input type="text" id="name" th:field="*{name}" class="form-control" placeholder="Enter name" required>
+                            <input type="text" id="name" th:field="*{name}" class="form-control" required>
                         </div>
                     </div>
 
                     <div class="row">
                         <div class="col-md-6 mb-3">
                             <label for="phone" class="form-label">Phone</label>
-                            <input type="text" id="phone" th:field="*{phone}" class="form-control" placeholder="Enter phone" required>
+                            <input type="text" id="phone" th:field="*{phone}" class="form-control" required>
                         </div>
                         <div class="col-md-6 mb-3">
                             <label for="email" class="form-label">Email</label>
-                            <input type="email" id="email" th:field="*{email}" class="form-control" placeholder="Enter email" required>
+                            <input type="email" id="email" th:field="*{email}" class="form-control" required>
                         </div>
                     </div>
 
-                    <div class="mb-3">
-                        <label for="address" class="form-label">Address</label>
-                        <textarea id="address" th:field="*{address}" class="form-control" rows="2" placeholder="Enter address"></textarea>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="address" class="form-label">Address</label>
+                            <textarea id="address" th:field="*{address}" class="form-control" rows="2"></textarea>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="lossBookCount" class="form-label">Loss Book Count</label>
+                            <input type="number" id="lossBookCount" th:field="*{lossBookCount}" class="form-control">
+                        </div>
                     </div>
 
                     <div class="row">
@@ -64,19 +69,25 @@
                                 <option value="">Select Type</option>
                                 <option value="Student">Student</option>
                                 <option value="Teacher">Teacher</option>
-                                <option value="General">General</option>
                             </select>
                         </div>
                         <div class="col-md-4 mb-3">
                             <label for="status" class="form-label">Status</label>
                             <select id="status" th:field="*{status}" class="form-select" required>
-                                <option value="ACTIVE">ACTIVE</option>
-                                <option value="INACTIVE">INACTIVE</option>
+                                <option value="active">active</option>
+                                <option value="warning">warning</option>
+                                <option value="banned">banned</option>
+                                <option value="expired">expired</option>
                             </select>
                         </div>
                         <div class="col-md-4 mb-3">
                             <label for="registeredDate" class="form-label">Registered Date</label>
                             <input type="date" id="registeredDate" th:field="*{registeredDate}" class="form-control" required>
+                        </div>
+        
+                        <div class="col-md-4 mb-3">
+                            <label for="expiredDate" class="form-label">Expired Date</label>
+                            <input type="date" id="expiredDate" th:field="*{expiredDate}" class="form-control" required>
                         </div>
                     </div>
 
@@ -102,10 +113,22 @@
 
 <!-- JavaScript Event Listener -->
 <script>
+
+function formatDate(dateString) {
+    if (!dateString) return null;
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) return dateString;
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+}
+
 document.getElementById("memberForm").addEventListener("submit", async function(e) {
     e.preventDefault();
 
     const memberId = document.getElementById("memberId")?.value;
+    
     const member = {
         memberCode: document.getElementById("memberCode").value,
         name: document.getElementById("name").value,
@@ -113,9 +136,13 @@ document.getElementById("memberForm").addEventListener("submit", async function(
         email: document.getElementById("email").value,
         address: document.getElementById("address").value,
         memberType: document.getElementById("memberType").value,
+        lossBookCount: document.getElementById("lossBookCount").value ? parseInt(document.getElementById("lossBookCount").value) : 0,
         status: document.getElementById("status").value,
-        registeredDate: document.getElementById("registeredDate").value
+        registeredDate: formatDate(document.getElementById("registeredDate").value),
+        expiredDate: formatDate(document.getElementById("expiredDate").value)
     };
+
+    console.log("Sending Member Data:", member); 
 
     const url = memberId ? `/api/members/${memberId}` : "/api/members";
     const method = memberId ? "PUT" : "POST";
@@ -134,6 +161,8 @@ document.getElementById("memberForm").addEventListener("submit", async function(
             alert(successMsg);
             window.location.href = "/members";
         } else {
+            const errorText = await response.text();
+            console.error("Server Error Response:", errorText);
             alert("Operation failed. Status: " + response.status);
         }
     } catch (error) {

@@ -13,10 +13,19 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+import java.util.UUID;
 
 @Entity
 @Table(name = "members")
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class Member {
 
 	@Id
@@ -38,6 +47,9 @@ public class Member {
 	@Column(length = 255)
 	private String address;
 
+	@Column(name = "loss_book_count")
+    private Integer lossBookCount = 0;
+
 	@Column(name = "member_type", nullable = false, length = 50)
 	private String memberType;
 
@@ -46,6 +58,9 @@ public class Member {
 
 	@Column(name = "registered_date", nullable = false)
 	private LocalDate registeredDate;
+
+	@Column(name = "expired_date") 
+    private LocalDate expiredDate;
 
 	@CreationTimestamp
 	@Column(name = "created_at", nullable = false, updatable = false)
@@ -61,124 +76,43 @@ public class Member {
 	@OneToMany(mappedBy = "member")
 	private List<BookHistory> bookHistories;
 
-	public Member() {
+	@PrePersist
+    public void prePersist() {
+        if (this.memberCode == null || this.memberCode.isEmpty()) {
+            this.memberCode = "MEM-" + UUID.randomUUID().toString().substring(0, 6).toUpperCase();
+        }
+        if (this.status == null || this.status.isEmpty()) {
+            this.status = "active";
+        }
+        if (this.lossBookCount == null) {
+            this.lossBookCount = 0;
+        }
+        if (this.registeredDate == null) {
+            this.registeredDate = LocalDate.now();
+        }
+        if (this.expiredDate == null) {
+            this.expiredDate = this.registeredDate.plusYears(1); 
+        }
+    }
 
-	}
+    public Member(String memberCode, String name, String phone, String email, String address, String memberType,
+            String status, LocalDate registeredDate) {
+        super();
+        this.memberCode = memberCode;
+        this.name = name;
+        this.phone = phone;
+        this.email = email;
+        this.address = address;
+        this.memberType = memberType;
+        this.status = status;
+        this.registeredDate = registeredDate;
+    }
 
-	public Member(String memberCode, String name, String phone, String email, String address, String memberType,
-			String status, LocalDate registeredDate) {
-		super();
-		this.memberCode = memberCode;
-		this.name = name;
-		this.phone = phone;
-		this.email = email;
-		this.address = address;
-		this.memberType = memberType;
-		this.status = status;
-		this.registeredDate = registeredDate;
-	}
-
-	public Integer getId() {
-		return id;
-	}
-
-	public void setId(Integer id) {
-		this.id = id;
-	}
-
-	public String getMemberCode() {
-		return memberCode;
-	}
-
-	public void setMemberCode(String memberCode) {
-		this.memberCode = memberCode;
-	}
-
-	public String getName() {
-		return name;
-	}
-
-	public void setName(String name) {
-		this.name = name;
-	}
-
-	public String getPhone() {
-		return phone;
-	}
-
-	public void setPhone(String phone) {
-		this.phone = phone;
-	}
-
-	public String getEmail() {
-		return email;
-	}
-
-	public void setEmail(String email) {
-		this.email = email;
-	}
-
-	public String getAddress() {
-		return address;
-	}
-
-	public void setAddress(String address) {
-		this.address = address;
-	}
-
-	public String getMemberType() {
-		return memberType;
-	}
-
-	public void setMemberType(String memberType) {
-		this.memberType = memberType;
-	}
-
-	public String getStatus() {
-		return status;
-	}
-
-	public void setStatus(String status) {
-		this.status = status;
-	}
-
-	public LocalDate getRegisteredDate() {
-		return registeredDate;
-	}
-
-	public void setRegisteredDate(LocalDate registeredDate) {
-		this.registeredDate = registeredDate;
-	}
-
-	public LocalDateTime getCreatedAt() {
-		return createdAt;
-	}
-
-	public LocalDateTime getUpdatedAt() {
-		return updatedAt;
-	}
-
-	public List<BorrowTransaction> getBorrowTransactions() {
-		return borrowTransactions;
-	}
-
-	public void setBorrowTransactions(List<BorrowTransaction> borrowTransactions) {
-		this.borrowTransactions = borrowTransactions;
-	}
-
-	public List<BookHistory> getBookHistories() {
-		return bookHistories;
-	}
-
-	public void setBookHistories(List<BookHistory> bookHistories) {
-		this.bookHistories = bookHistories;
-	}
-
-	@Override
-	public String toString() {
-		return "Member{" + "id=" + id + ", memberCode='" + memberCode + '\'' + ", name='" + name + '\'' + ", phone='"
-				+ phone + '\'' + ", email='" + email + '\'' + ", address='" + address + '\'' + ", memberType='"
-				+ memberType + '\'' + ", status='" + status + '\'' + ", registeredDate=" + registeredDate
-				+ ", createdAt=" + createdAt + ", updatedAt=" + updatedAt + '}';
-	}
+    @Override
+    public String toString() {
+        return "Member{" + "id=" + id + ", memberCode='" + memberCode + '\'' + ", name='" + name + '\'' + ", phone='"
+                + phone + '\'' + ", email='" + email + '\'' + ", address='" + address + '\'' + ", memberType='"
+                + memberType + '\'' + ", status='" + status + '\'' + ", registeredDate=" + registeredDate
+                + ", createdAt=" + createdAt + ", updatedAt=" + updatedAt + '}';
+    }
 }

@@ -1,6 +1,5 @@
 package com.library.management.controller;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -8,7 +7,6 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.library.management.service.BookService;
@@ -17,7 +15,7 @@ import com.library.management.entity.BorrowTransaction;
 import com.library.management.entity.Member;
 import com.library.management.service.BorrowTransactionService;
 import com.library.management.service.MemberService;
-
+import  com.library.management.service.BookHistoryService;
 import lombok.RequiredArgsConstructor;
 
 @Controller
@@ -28,6 +26,7 @@ public class PageController {
     private final CategoryService categoryService;
     private final MemberService memberService;
     private final BorrowTransactionService borrowTransactionService;
+    private final BookHistoryService bookHistoryService;
 
     // 1. Auth / Login
     @GetMapping("/")
@@ -74,6 +73,12 @@ public class PageController {
         model.addAttribute("selectedStatus", status != null ? status : "");
         
         return "books/list"; 
+    }
+
+    @GetMapping("/books/history/{id}")
+    public String viewBookHistories(@PathVariable("id") Integer id, Model model) {
+        model.addAttribute("histories", bookHistoryService.getHistoriesByBookId(id));
+        return "books/history"; 
     }
 
     @GetMapping("/books/create")
@@ -178,6 +183,14 @@ public class PageController {
         return "members/list";
     }
 
+    @GetMapping("/members/details/{id}")
+    public String memberDetails(@PathVariable Integer id, Model model) {
+        Member member = memberService.getMemberById(id)
+                .orElseThrow(() -> new RuntimeException("Member not found with id: " + id));
+        model.addAttribute("member", member);
+        return "members/details";
+    }
+
     @GetMapping("/members/create")
     public String memberCreate(Model model) {
         model.addAttribute("member", new Member());
@@ -223,6 +236,7 @@ public class PageController {
         return "redirect:/members";
     }
 
+
     // --- Transactions Section ---
     @GetMapping({"/transactions", "/transactions/list"})
     public String transactionList(Model model) {
@@ -249,18 +263,18 @@ public class PageController {
         return "redirect:/transactions";
     }
 
-    @GetMapping("/transactions/return/{id}")
-    public String returnTransaction(@PathVariable Integer id, RedirectAttributes redirectAttributes) {
+    @PostMapping("/return/{id}")
+    public String returnBook(@PathVariable("id") Integer id, 
+                             @RequestParam("status") String returnStatus, 
+                             RedirectAttributes redirectAttributes) {
         try {
-            borrowTransactionService.returnBook(id);
-            redirectAttributes.addFlashAttribute("successMessage", "Book returned successfully!");
+            borrowTransactionService.returnBook(id, returnStatus);
+            redirectAttributes.addFlashAttribute("successMessage", "Transaction updated successfully!");
         } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
+            redirectAttributes.addFlashAttribute("errorMessage", "Error: " + e.getMessage());
         }
-        return "redirect:/transactions";
+        return "redirect:/transactions/list";
     }
-
-    // --- Transactions Section (အောက်ပါအတိုင်း /transactions ထည့်ပါ) ---
 
     @GetMapping("/transactions/detail/{id}")
     public String viewTransactionDetail(@PathVariable Integer id, Model model) {

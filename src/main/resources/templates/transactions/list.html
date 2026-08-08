@@ -34,6 +34,7 @@
                                 <th>Status</th>
                                 <th>Transaction Date</th>
                                 <th>Due Date</th>
+                                <th>Return Date</th>
                                 <th>Fine</th>
                                 <th class="text-center">Action</th>
                             </tr>
@@ -46,33 +47,33 @@
                                 <td th:text="${tx.book != null ? tx.book.title : '-'}"></td>
                                 <td>
                                     <span class="badge" 
-                                        th:classappend="${tx.status == 'BORROWED' ? 'bg-warning' : (tx.status == 'OVERDUE' ? 'bg-danger' : 'bg-success')}"
+                                        th:classappend="${tx.status == 'Borrowed' ? 'bg-warning text-dark' : (tx.status == 'OVERDUE' || tx.status == 'loss or damage' ? 'bg-danger' : 'bg-success')}"
                                         th:text="${tx.status}"></span>
                                 </td>
                                 <td th:text="${tx.borrowDate != null ? tx.borrowDate : '-'}"></td>
                                 <td th:text="${tx.dueDate != null ? tx.dueDate : '-'}"></td>
+                                <td th:text="${tx.returnDate != null ? tx.returnDate : '-'}"></td>
                                 <td>
                                     <span th:text="${tx.fine != null ? tx.fine : 0.0}" 
                                         th:class="${tx.fine > 0 ? 'text-danger fw-bold' : ''}">
                                     </span>
                                 </td>
                                 <td class="text-center">
-                                
-									<a class="btn btn-sm btn-info text-white"
-									th:href="@{/transactions/detail/{id}(id=${tx.id})}" title="View">
-										<i class="bi bi-eye"></i>
-									</a>
+                                    <div class="d-flex justify-content-center align-items-center gap-1">
+                                        <a class="btn btn-sm btn-info text-white d-inline-flex justify-content-center align-items-center"
+                                        style="width: 32px; height: 32px; padding: 0;"
+                                        th:href="@{/transactions/detail/{id}(id=${tx.id})}" title="View">
+                                            <i class="bi bi-eye"></i>
+                                        </a>
 
-									<a class="btn btn-sm btn-warning"
-									th:href="@{/transactions/edit/{id}(id=${tx.id})}" title="Edit">
-										<i class="bi bi-pencil"></i>
-									</a>
-                                    <button type="button" class="btn btn-sm btn-success" 
-                                            th:if="${tx.status == 'BORROWED' or tx.status == 'OVERDUE'}" 
-                                            th:onclick="returnBook([[${tx.id}]])" 
-                                            title="Return Book">
-                                        <i class="bi bi-arrow-return-left"></i> Return
-                                    </button>
+                                        <button type="button" class="btn btn-sm btn-success d-inline-flex justify-content-center align-items-center" 
+                                                style="width: 32px; height: 32px; padding: 0;"
+                                                th:if="${tx.status == 'Borrowed' or tx.status == 'OVERDUE'}" 
+                                                th:onclick="openReturnModal([[${tx.id}]])" 
+                                                title="Return Book">
+                                            <i class="bi bi-arrow-return-left"></i>
+                                        </button>
+                                    </div>
                                 </td>
                             </tr>
                         </tbody>
@@ -81,6 +82,32 @@
                 <div th:replace="~{layout/footer :: footer}"></div>
             </div>
         </main>
+    </div>
+    
+    <!-- Return Option Modal -->
+    <div class="modal fade" id="returnModal" tabindex="-1" aria-labelledby="returnModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="returnModalLabel">Select Return Status</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" id="modalTransactionId">
+                    <div class="mb-3">
+                        <label for="returnStatusSelect" class="form-label">Choose Action:</label>
+                        <select id="returnStatusSelect" class="form-select">
+                            <option value="RETURNED"> Return </option>
+                            <option value="loss or damage">Loss or Damage</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" onclick="submitReturn()">Confirm</button>
+                </div>
+            </div>
+        </div>
     </div>
     
     <!-- DataTables CSS & JS Dependencies -->
@@ -107,13 +134,26 @@
     });
     </script>
 
-    <!-- Return Book AJAX Function -->
+    <!-- Return Book Modal & AJAX Script -->
     <script>
-    async function returnBook(id) {
-        if (!confirm('Are you sure to return this book?')) return;
+    let returnModal;
+    
+    document.addEventListener("DOMContentLoaded", function() {
+        returnModal = new bootstrap.Modal(document.getElementById('returnModal'));
+    });
+
+    function openReturnModal(id) {
+        document.getElementById('modalTransactionId').value = id;
+        document.getElementById('returnStatusSelect').value = 'RETURNED';
+        returnModal.show();
+    }
+
+    async function submitReturn() {
+        const id = document.getElementById('modalTransactionId').value;
+        const status = document.getElementById('returnStatusSelect').value;
 
         try {
-            const response = await fetch(`/api/transactions/return/${id}`, {
+            const response = await fetch(`/api/transactions/return/${id}?status=${encodeURIComponent(status)}`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' }
             });
@@ -121,7 +161,7 @@
             if (response.ok) {
                 window.location.reload(); 
             } else {
-                alert("Failed to return the book.");
+                alert("Failed to process the return.");
             }
         } catch (error) {
             console.error("Error:", error);

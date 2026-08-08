@@ -36,44 +36,44 @@
                                 <select id="memberId" class="form-select" required>
                                     <option value="">-- Select Member --</option>
                                     <option th:each="m : ${members}" 
-                                            th:value="${m.id}" 
-                                            th:text="${m.memberCode + ' - ' + m.name}">
+                                        th:value="${m.id}" 
+                                        th:text="${m.memberCode + ' - ' + m.name + ' (' + m.status + ')'}"
+                                        th:disabled="${m.status == 'banned'}"
+                                        th:classappend="${m.status == 'banned' ? 'text-danger bg-light' : ''}">
                                     </option>
                                 </select>
                             </div>
 
                             <!-- Select Book -->
-						<div class="col-md-6 mb-3">
-							<label class="form-label">Book <span class="text-danger">*</span></label>
-							<select id="bookId" class="form-select" required>
-								<option value="">-- Select Book --</option>
-								<option th:each="b : ${books}" 
-										th:value="${b.id}" 
-										th:text="${b.isbn + ' - ' + b.title + (b.status == 'BORROWED' ? ' (Borrowed)' : '')}"
-										th:disabled="${b.status == 'BORROWED'}"
-										th:class="${b.status == 'BORROWED' ? 'text-muted bg-light' : ''}">
-								</option>
-							</select>
-						</div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Book <span class="text-danger">*</span></label>
+                                <select id="bookId" class="form-select" required>
+                                    <option value="">-- Select Book --</option>
+                                    <option th:each="b : ${books}" 
+                                        th:value="${b.id}" 
+                                        th:text="${b.isbn + ' - ' + b.title + (b.status == 'Borrowed' ? ' (Borrowed)' : '')}"
+                                        th:disabled="${b.status == 'Borrowed'}"
+                                        th:class="${b.status == 'Borrowed' ? 'text-muted bg-light' : ''}">
+                                    </option>
+                                </select>
+                            </div>
                         </div>
 
                         <div class="row">
-                            <!-- Transaction Code -->
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">Transaction Code <span class="text-danger">*</span></label>
-                                <input type="text" id="transactionCode" class="form-control" placeholder="Enter transaction code" required>
+                            <!-- Borrow Date -->
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Borrow Date <span class="text-danger">*</span></label>
+                                <input type="date" id="borrowDate" class="form-control" required>
                             </div>
 
-							<div class="col-md-4 mb-3">
-								<label class="form-label">Borrow Date <span class="text-danger">*</span></label>
-								<input type="date" id="borrowDate" class="form-control" required>
-							</div>
                             <!-- Due Date -->
-                            <div class="col-md-6 mb-3">
+                            <div class="col-md-4 mb-3">
                                 <label class="form-label">Due Date <span class="text-danger">*</span></label>
                                 <input type="date" id="dueDate" class="form-control" required>
                             </div>
-							<div class="col-md-4 mb-3">
+
+                            <!-- Status -->
+                            <div class="col-md-4 mb-3">
                                 <label class="form-label">Status <span class="text-danger">*</span></label>
                                 <select id="status" class="form-select" required>
                                     <option value="BORROWED">Borrowed</option>
@@ -106,39 +106,50 @@
     <div th:replace="~{layout/master :: scripts}"></div>
 
     <script>
-		document.getElementById("borrowForm").addEventListener("submit", async function(e) {
-    e.preventDefault();
 
-    const transaction = {
-        transactionCode: document.getElementById("transactionCode").value,
-        borrowDate: document.getElementById("borrowDate").value, // 👈 ဤနေရာကို ဖြည့်စွက်ပါ
-        dueDate: document.getElementById("dueDate").value,
-        remarks: document.getElementById("remarks").value,
-		status: document.getElementById("status").value,
-        member: {
-            id: document.getElementById("memberId").value
-        },
-        book: {
-            id: document.getElementById("bookId").value
-        }
-    };
-
-    const response = await fetch("/api/transactions", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json"
-        },
-        body: JSON.stringify(transaction)
+    document.addEventListener("DOMContentLoaded", function() {
+        const today = new Date().toISOString().split('T')[0];
+        document.getElementById("borrowDate").value = today;
     });
 
-    if (response.ok) {
-        alert("Borrow transaction created successfully.");
-        window.location.href = "/transactions/list";
-    } else {
-        alert("Failed to create borrow transaction.");
-    }
-});
-   </script>
+    document.getElementById("borrowForm").addEventListener("submit", async function(e) {
+        e.preventDefault();
+
+        const transaction = {
+            borrowDate: document.getElementById("borrowDate").value,
+            dueDate: document.getElementById("dueDate").value,
+            remarks: document.getElementById("remarks").value,
+            status: document.getElementById("status").value,
+            member: {
+                id: document.getElementById("memberId").value
+            },
+            book: {
+                id: document.getElementById("bookId").value
+            }
+        };
+
+        try {
+            const response = await fetch("/api/transactions", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(transaction)
+            });
+
+            if (response.ok) {
+                alert("Borrow transaction created successfully.");
+                window.location.href = "/transactions"; 
+            } else {
+                const errorData = await response.text();
+                alert("Failed to create borrow transaction: " + errorData);
+            }
+        } catch (error) {
+            console.error("Error:", error);
+            alert("An error occurred while connecting to the server.");
+        }
+    });
+    </script>
 </body>
 
 </html>

@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{layout/master :: head('Member Details')}"></head>
+
+<body>
+<div class="app-shell">
+
+    <div th:replace="~{layout/sidebar :: sidebar('members')}"></div>
+
+    <main class="main-area">
+
+        <div th:replace="~{layout/navbar :: navbar('Member Details')}"></div>
+
+        <div class="content-wrap">
+
+            <nav>
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="/dashboard">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a href="/members">Members</a></li>
+                    <li class="breadcrumb-item active">Details</li>
+                </ol>
+            </nav>
+
+            <div class="page-card p-4">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h1 class="h4 mb-0">Member Details</h1>
+                    <div>
+                        <a class="btn btn-warning btn-sm text-dark me-2" th:href="@{/members/edit/{id}(id=${member.id})}">
+                            <i class="bi bi-pencil me-1"></i>Edit
+                        </a>
+                        <a href="/members" class="btn btn-secondary btn-sm">
+                            <i class="bi bi-arrow-left me-1"></i>Back to List
+                        </a>
+                    </div>
+                </div>
+
+                <!-- 2 Columns Grid (ဘယ်/ညာ ညီညာစေရန် row တစ်ခုချင်းစီခွဲခြင်း) -->
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label class="fw-bold text-muted">Member Code:</label>
+                        <p class="fs-6" th:text="${member.memberCode}">-</p>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="fw-bold text-muted">Name:</label>
+                        <p class="fs-6" th:text="${member.name}">-</p>
+                    </div>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label class="fw-bold text-muted">Phone:</label>
+                        <p class="fs-6" th:text="${member.phone}">-</p>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="fw-bold text-muted">Email:</label>
+                        <p class="fs-6" th:text="${member.email}">-</p>
+                    </div>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label class="fw-bold text-muted">Address:</label>
+                        <p class="fs-6" th:text="${member.address != null ? member.address : '-'}">-</p>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="fw-bold text-muted">Loss Book Count:</label>
+                        <p class="fs-6" th:text="${member.lossBookCount}">0</p>
+                    </div>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label class="fw-bold text-muted">Member Type:</label>
+                        <p class="fs-6" th:text="${member.memberType}">-</p>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="fw-bold text-muted">Status:</label>
+                        <p>
+                            <span th:text="${member.status}" 
+                                  th:classappend="${member.status == 'banned' ? 'badge bg-danger' : 
+                                                  (member.status == 'warning' ? 'badge bg-warning' : 'badge bg-success')}">
+                            </span>
+                        </p>
+                    </div>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label class="fw-bold text-muted">Registered Date:</label>
+                        <p class="fs-6" th:text="${member.registeredDate != null ? #temporals.format(member.registeredDate, 'yyyy-MM-dd') : '-'}">-</p>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="fw-bold text-muted">Expired Date:</label>
+                        <p class="fs-6" th:text="${member.expiredDate != null ? #temporals.format(member.expiredDate, 'yyyy-MM-dd') : '-'}">-</p>
+                    </div>
+                </div>
+
+            </div>
+
+            <div th:replace="~{layout/footer :: footer}"></div>
+
+        </div>
+
+    </main>
+
+</div>
+
+<div th:replace="~{layout/master :: scripts}"></div>
+
+</body>
+</html>
