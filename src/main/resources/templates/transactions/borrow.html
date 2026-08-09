@@ -10,7 +10,7 @@
 
         <main class="main-area">
             <!-- Navbar -->
-            <div th:replace="~{layout/navbar :: navbar('Borrow Book')}"></div>
+            <div th:replace="~{layout/navbar :: navbar}"></div>
 
             <div class="content-wrap">
                 <!-- Breadcrumb -->
@@ -75,10 +75,8 @@
                             <!-- Status -->
                             <div class="col-md-4 mb-3">
                                 <label class="form-label">Status <span class="text-danger">*</span></label>
-                                <select id="status" class="form-select" required>
-                                    <option value="BORROWED">Borrowed</option>
-                                    <option value="PENDING">Pending</option>
-                                </select>
+                                <input type="text" class="form-control bg-light" value="Borrowed" readonly>
+                                <input type="hidden" id="status" name="status" value="BORROWED">
                             </div>
                         </div>
 

@@ -4,38 +4,111 @@
 <head th:replace="~{layout/master :: head('Create Admin')}"></head>
 
 <body>
-	<div class="app-shell">
-		<div th:replace="~{layout/sidebar :: sidebar('admins')}"></div>
-		<main class="main-area">
-			<div th:replace="~{layout/navbar :: navbar('Create Admin')}"></div>
-			<div class="content-wrap">
-				<nav>
-					<ol class="breadcrumb">
-						<li class="breadcrumb-item"><a href="/dashboard">Dashboard</a></li>
-						<li class="breadcrumb-item"><a href="/admins">Admins</a></li>
-						<li class="breadcrumb-item active">Create</li>
-					</ol>
-				</nav>
-				<form class="page-card p-4">
-					<h1 class="h4 mb-3">Create Admin</h1>
-					<div class="row g-3">
-						<div class="col-md-6"><label class="form-label">Name</label><input class="form-control"></div>
-						<div class="col-md-6"><label class="form-label">Email</label><input class="form-control"
-								type="email"></div>
-						<div class="col-md-6"><label class="form-label">Password</label><input class="form-control"
-								type="password"></div>
-						<div class="col-md-6"><label class="form-label">Role</label><select class="form-select">
-								<option>Admin</option>
-							</select></div>
-					</div>
-					<div class="mt-4"><button class="btn btn-matcha">Save</button> <a class="btn btn-light"
-							href="/admins">Cancel</a></div>
-				</form>
-				<div th:replace="~{layout/footer :: footer}"></div>
-			</div>
-		</main>
-	</div>
-	<div th:replace="~{layout/master :: scripts}"></div>
+    <div class="app-shell">
+        <div th:replace="~{layout/sidebar :: sidebar('admins')}"></div>
+        <main class="main-area">
+            <div th:replace="~{layout/navbar :: navbar}"></div>
+            <div class="content-wrap">
+                <nav>
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a href="/dashboard">Dashboard</a></li>
+                        <li class="breadcrumb-item"><a href="/admin-management">Admin Management</a></li>
+                        <li class="breadcrumb-item active">Create</li>
+                    </ol>
+                </nav>
+                
+                <!-- id ထည့်သွင်းထားပြီး thymeleaf action အစား script ဖြင့် ဖမ်းယူရန် form ကိုပြင်ဆင်ထားသည် -->
+                <form id="adminCreateForm" class="page-card p-4">
+                    <h1 class="h4 mb-3">Create Admin</h1>
+                    
+                    <!-- Alert Messages -->
+                    <div id="alertContainer">
+                        <div th:if="${successMessage}" class="alert alert-success" th:text="${successMessage}"></div>
+                        <div th:if="${errorMessage}" class="alert alert-danger" th:text="${errorMessage}"></div>
+                    </div>
+
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Full Name</label>
+                            <input class="form-control" type="text" id="name" placeholder="Full Name" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Username</label>
+                            <input class="form-control" type="text" id="username" placeholder="Username" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Email</label>
+                            <input class="form-control" type="email" id="email" placeholder="Email" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Status</label>
+                            <select class="form-select" id="status">
+                                <option value="ACTIVE">ACTIVE</option>
+                                <option value="INACTIVE">INACTIVE</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Password</label>
+                            <input class="form-control" type="password" id="password" placeholder="Password" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Confirm Password</label>
+                            <input class="form-control" type="password" id="confirmPassword" placeholder="Confirm Password" required>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-4">
+                        <button class="btn btn-matcha" type="submit">Save</button> 
+                        <a class="btn btn-light" href="/admin-management">Cancel</a>
+                    </div>
+                </form>
+
+                <div th:replace="~{layout/footer :: footer}"></div>
+            </div>
+        </main>
+    </div>
+    
+    <div th:replace="~{layout/master :: scripts}"></div>
+
+    <!-- Fetch API Script -->
+    <script>
+        document.getElementById('adminCreateForm').addEventListener('submit', async function(e) {
+            e.preventDefault(); // Page reload မဖြစ်အောင် တားဆီးခြင်း
+
+            const formData = {
+                name: document.getElementById('name').value,
+                username: document.getElementById('username').value,
+                email: document.getElementById('email').value,
+                status: document.getElementById('status').value,
+                password: document.getElementById('password').value,
+                confirmPassword: document.getElementById('confirmPassword').value
+            };
+
+            try {
+                const response = await fetch('/api/admin-management/create', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(formData)
+                });
+
+                const result = await response.text();
+                
+                const alertContainer = document.getElementById('alertContainer');
+                if (response.ok) {
+                    alertContainer.innerHTML = `<div class="alert alert-success">${result}</div>`;
+                    setTimeout(() => {
+                        window.location.href = '/admin-management';
+                    }, 1000);
+                } else {
+                    alertContainer.innerHTML = `<div class="alert alert-danger">${result}</div>`;
+                }
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        });
+    </script>
 </body>
 
 </html>

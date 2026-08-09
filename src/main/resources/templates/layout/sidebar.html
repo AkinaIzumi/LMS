@@ -1,19 +1,21 @@
-<aside class="sidebar p-3" th:fragment="sidebar(active)">
+<aside class="sidebar p-3" th:fragment="sidebar(active)" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
   <div class="d-flex align-items-center gap-3 mb-4">
     <div class="brand-mark">
       <img th:src="@{/img/ucspyay.jpg}" alt="UCSP" style="width: 50px; height: 50px; object-fit: contain;">
     </div>
     <div>
-      <div class="fw-bold fs-5">UCS Pyay LMS</div>
+      <div class="fw-bold fs-5">UCSP LMS</div>
       <div class="small text-muted">Library Management System</div>
     </div>
   </div>
+  
   <nav class="nav flex-column gap-1">
     <a class="nav-link lms-link" th:classappend="${active == 'dashboard'} ? 'active'" href="/dashboard"><i class="bi bi-house-door me-2"></i>Dashboard</a>
     <a class="nav-link lms-link" th:classappend="${active == 'books'} ? 'active'" href="/books"><i class="bi bi-book me-2"></i>Books</a>
     <a class="nav-link lms-link" th:classappend="${active == 'categories'} ? 'active'" href="/categories"><i class="bi bi-folder2-open me-2"></i>Categories</a>
     <a class="nav-link lms-link" th:classappend="${active == 'members'} ? 'active'" href="/members"><i class="bi bi-people me-2"></i>Members</a>
     <a class="nav-link lms-link" th:classappend="${active == 'transactions'} ? 'active'" href="/transactions"><i class="bi bi-arrow-repeat me-2"></i>Transactions</a>
-    <a class="nav-link lms-link" th:classappend="${active == 'admins'} ? 'active'" href="/admins"><i class="bi bi-person-workspace me-2"></i>Admins</a>
+    <a class="nav-link lms-link" th:classappend="${active == 'holds'} ? 'active'" href="/holds"><i class="bi bi-bookmark-check me-2"></i>Holds</a>
+    <a class="nav-link lms-link" th:classappend="${active == 'admins'} ? 'active'" href="/admin-management" sec:authorize="hasRole('MAIN_ADMIN')"><i class="bi bi-person-workspace me-2"></i>Admin Management</a>
   </nav>
 </aside>

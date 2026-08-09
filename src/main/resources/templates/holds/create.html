@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{layout/master :: head('Create Hold')}"></head>
+
+<body>
+
+<div class="app-shell">
+
+    <!-- Sidebar -->
+    <div th:replace="~{layout/sidebar :: sidebar('holds')}"></div>
+
+    <main class="main-area">
+
+        <!-- Navbar -->
+        <div th:replace="~{layout/navbar :: navbar}"></div>
+
+        <div class="content-wrap">
+
+            <!-- Breadcrumb -->
+            <nav>
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item">
+                        <a href="/dashboard">Dashboard</a>
+                    </li>
+                    <li class="breadcrumb-item">
+                        <a href="/holds">Book Holds</a>
+                    </li>
+                    <li class="breadcrumb-item active">
+                        Create
+                    </li>
+                </ol>
+            </nav>
+
+            <!-- Card -->
+            <div class="page-card p-4" style="max-width: 700px; margin: 0 auto;">
+
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h2 class="h4 mb-0">Create Book Hold </h2>
+                </div>
+
+                <!-- Alert Container -->
+                <div id="alertContainer"></div>
+
+                <form id="holdForm">
+
+                    <!-- Book Selection -->
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Select Book</label>
+                        <select id="bookId" class="form-select" required>
+                            <option value="">-- Choose Book --</option>
+                            <option th:each="b : ${books}" 
+                                    th:value="${b.id}" 
+                                    th:text="${b.title + ' (Available: ' + b.availableQuantity + ')'}">
+                            </option>
+                        </select>
+                    </div>
+
+                    <!-- Member Selection -->
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Select Member</label>
+                        <select id="memberId" class="form-select" required>
+                            <option value="">-- Choose Member --</option>
+                            <option th:each="m : ${members}" 
+                                    th:value="${m.id}" 
+                                    th:text="${m.name + ' (' + m.memberCode + ')'}">
+                            </option>
+                        </select>
+                    </div>
+
+                    <!-- Duration (Days) -->
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">Duration (Days to hold)</label>
+                        <input type="number" id="duration" class="form-control" value="3" min="1" required />
+                        <div class="form-text">သတ်မှတ်ရက်အတွင်း စာအုပ်လာမထုတ်ပါက Hold သက်တမ်းကုန်ဆုံးမည်။</div>
+                    </div>
+
+                    <div class="d-flex gap-2">
+
+                        <button type="submit" class="btn btn-matcha">
+                            <i class="bi bi-check-circle me-1"></i>
+                            Save Hold
+                        </button>
+
+                        <a href="/holds" class="btn btn-secondary">
+                            <i class="bi bi-arrow-left me-1"></i>
+                            Back
+                        </a>
+
+                    </div>
+
+                </form>
+
+            </div>
+
+        </div>
+
+    </main>
+
+</div>
+
+<!-- Scripts -->
+<div th:replace="~{layout/master :: scripts}"></div>
+
+<script>
+document.getElementById("holdForm").addEventListener("submit", async function(e) {
+
+    e.preventDefault();
+
+    const holdData = {
+        bookId: document.getElementById("bookId").value,
+        memberId: document.getElementById("memberId").value,
+        duration: document.getElementById("duration").value
+    };
+
+    try {
+        const response = await fetch("/holds/api/save", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(holdData)
+        });
+
+        const result = await response.json();
+
+        if (response.ok && result.success) {
+            alert(result.message || "Hold created successfully.");
+            window.location.href = "/holds";
+        } else {
+            alert(result.message || "Failed to create hold.");
+        }
+    } catch (error) {
+        console.error("Error:", error);
+        alert("An unexpected error occurred.");
+    }
+
+});
+</script>
+</body>
+</html>

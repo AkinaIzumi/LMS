@@ -10,7 +10,7 @@
 
     <main class="main-area">
 
-        <div th:replace="~{layout/navbar :: navbar('Book History')}"></div>
+        <div th:replace="~{layout/navbar :: navbar}"></div>
 
         <div class="content-wrap">
 
@@ -45,8 +45,6 @@
                         <th>Member Name</th>
                         <th>Borrow Date</th>
                         <th>Due Date</th>
-                        <th>Return Date</th>
-                        <th>Status</th>
                         <th>Remarks</th>
                         <th>Created Date</th>
                     </tr>
@@ -59,13 +57,6 @@
                         <td th:text="${history.member != null ? history.member.name : '-'}"></td>
                         <td th:text="${history.borrowDate}"></td>
                         <td th:text="${history.dueDate}"></td>
-                        <td th:text="${history.returnDate != null ? history.returnDate : '-'}"></td>
-                        <td>
-                            <span class="badge"
-                                  th:classappend="${history.status != null && history.status.toUpperCase() == 'BORROWED' ? 'badge-borrowed' : 'badge-available'}"
-                                  th:text="${history.status}">
-                            </span>
-                        </td>
                         <td th:text="${history.remarks != null ? history.remarks : '-'}"></td>
                         <td th:text="${history.createdAt != null ? #temporals.format(history.createdAt,'yyyy-MM-dd HH:mm') : '-'}"></td>
                     </tr>

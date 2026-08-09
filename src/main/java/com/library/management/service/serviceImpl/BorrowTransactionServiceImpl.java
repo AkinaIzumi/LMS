@@ -6,7 +6,8 @@ import com.library.management.entity.BorrowTransaction;
 import com.library.management.repository.BookHistoryRepository;
 import com.library.management.repository.BookRepository;
 import com.library.management.repository.BorrowTransactionRepository;
-import com.library.management.service.BookService;
+import com.library.management.entity.Hold;
+import com.library.management.repository.HoldRepository;
 import com.library.management.service.BorrowTransactionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -29,6 +30,9 @@ public class BorrowTransactionServiceImpl implements BorrowTransactionService {
 
     @Autowired
     private BookHistoryRepository bookHistoryRepository;
+
+    @Autowired
+    private HoldRepository holdRepository;
 
     @Override
     public List<BorrowTransaction> getAllTransactions() {
@@ -92,6 +96,17 @@ public class BorrowTransactionServiceImpl implements BorrowTransactionService {
 
         BorrowTransaction savedTransaction = borrowTransactionRepository.save(transaction);
 
+        Hold pendingHold = holdRepository.findByBookIdAndMemberIdAndStatus(
+                book.getId(), 
+                transaction.getMember().getId(), 
+                "PENDING"
+        );
+
+        if (pendingHold != null) {
+            pendingHold.setStatus("SUCCESS");
+            holdRepository.save(pendingHold);
+        }
+
         BookHistory history = new BookHistory();
         history.setBook(book);
         history.setMember(transaction.getMember());
@@ -150,6 +165,11 @@ public class BorrowTransactionServiceImpl implements BorrowTransactionService {
                 book.setStatus("AVAILABLE");
                 bookRepository.save(book);
             }
+
+            Hold nextHold = holdRepository.findFirstByBookIdAndStatusOrderByCreatedAtAsc(book.getId(), "PENDING");
+                if (nextHold != null) {
+                    System.out.println("⚠️ Alert: This book is held by " + nextHold.getMember().getName());
+                }
         }
 
         borrowTransactionRepository.save(tx);
@@ -169,4 +189,6 @@ public class BorrowTransactionServiceImpl implements BorrowTransactionService {
     public List<BorrowTransaction> findByDueDateBeforeAndStatus(LocalDate date, String status) {
         return borrowTransactionRepository.findByDueDateBeforeAndStatus(date, status);
     }
+
+    
 }

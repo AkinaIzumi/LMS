@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{layout/master :: head('Book Holds')}"></head>
+
+<body>
+    <div class="app-shell">
+        <div th:replace="~{layout/sidebar :: sidebar('holds')}"></div>
+        <main class="main-area">
+            <div th:replace="~{layout/navbar :: navbar}"></div>
+            <div class="content-wrap">
+                <nav>
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a href="/dashboard">Dashboard</a></li>
+                        <li class="breadcrumb-item active">Book Holds</li>
+                    </ol>
+                </nav>
+                
+                <div class="page-card p-3">
+                    
+                    <!-- Alert Messages -->
+                    <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show" role="alert" th:text="${successMessage}">
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                    <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show" role="alert" th:text="${errorMessage}">
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h1 class="h4 mb-0">Book Holding & Reservations</h1>
+                        <a class="btn btn-matcha" href="/holds/new">
+                            <i class="bi bi-plus-lg me-1"></i>Create Hold
+                        </a>
+                    </div>
+                    
+                    <table class="table table-striped table-bordered datatable w-100">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Book Title</th>
+                                <th>Member Name</th>
+                                <th>Hold Date</th>
+                                <th>Expiry Date</th>
+                                <th>Duration</th>
+                                <th>Status</th>
+                                <th class="text-center">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="hold : ${holds}">
+                                <td th:text="${hold.id}"></td>
+                                <td th:text="${hold.book.title}"></td>
+                                <td th:text="${hold.member.name}"></td>
+                                <td th:text="${hold.holdDate != null ? #temporals.format(hold.holdDate, 'yyyy-MM-dd') : '-'}"></td>
+                                <td th:text="${hold.expiryDate != null ? #temporals.format(hold.expiryDate, 'yyyy-MM-dd') : '-'}"></td>
+                                <td th:text="${hold.duration + ' Days'}"></td>
+                                <td>
+                                    <span th:text="${hold.status}" 
+                                        th:classappend="${hold.status == 'CANCELLED' ? 'badge bg-danger' : 
+                                                        (hold.status == 'PENDING' ? 'badge bg-warning text-dark' : 'badge bg-success')}">
+                                    </span>
+                                </td>
+                                <td class="text-center">
+                                    <a th:if="${hold.status == 'PENDING'}" class="btn btn-sm btn-warning" th:href="@{/holds/cancel/{id}(id=${hold.id})}" title="Cancel Hold">
+                                        <i class="bi bi-x-circle"></i> Cancel
+                                    </a>
+                                    
+                                    <!-- Delete Button -->
+                                    <form th:action="@{/holds/delete/{id}(id=${hold.id})}" method="get" class="d-inline" onsubmit="return confirm('Are you sure you want to delete this record?');">
+                                        <button type="submit" class="btn btn-sm btn-danger" title="Delete">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div th:replace="~{layout/footer :: footer}"></div>
+            </div>
+        </main>
+    </div>
+    
+    <!-- DataTables CSS & JS Dependencies -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.8/css/dataTables.bootstrap5.min.css">
+    
+    <div th:replace="~{layout/master :: scripts}"></div>
+
+    <!-- DataTable Initialization Script -->
+    <script>
+    $(function () {
+        if (!$.fn.DataTable.isDataTable('.datatable')) {
+            $('.datatable').DataTable({
+                responsive: true,
+                autoWidth: false,
+                pageLength: 10,
+                columnDefs: [
+                    {
+                        orderable: false,
+                        targets: 7 
+                    }
+                ]
+            });
+        }
+    });
+    </script>
+    
+</body>
+
+</html>

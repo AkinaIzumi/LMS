@@ -1,55 +1,144 @@
 <!doctype html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
+    
+  <head th:replace="~{layout/master :: head('Admin Management')}"></head>
 
-<head th:replace="~{layout/master :: head('Admins')}"></head>
-
-<body>
-	<div class="app-shell">
-		<div th:replace="~{layout/sidebar :: sidebar('admins')}"></div>
-		<main class="main-area">
-			<div th:replace="~{layout/navbar :: navbar('Admins')}"></div>
-			<div class="content-wrap">
-				<nav>
-					<ol class="breadcrumb">
-						<li class="breadcrumb-item"><a href="/dashboard">Dashboard</a></li>
-						<li class="breadcrumb-item active">Admins</li>
-					</ol>
-				</nav>
-				<div class="page-card p-3">
-					<div class="d-flex justify-content-between align-items-center mb-3">
-						<h1 class="h4 mb-0">Admins</h1><a class="btn btn-matcha" href="/admins/create"><i
-								class="bi bi-person-plus me-1"></i>Create</a>
-					</div>
-					<table class="table align-middle datatable">
-						<thead>
-							<tr>
-								<th>Name</th>
-								<th>Email</th>
-								<th>Role</th>
-								<th>Created Date</th>
-								<th>Action</th>
-							</tr>
-						</thead>
-						<tbody>
-							<tr>
-								<td>Admin User</td>
-								<td>admin@school.edu</td>
-								<td>Admin</td>
-								<td>2026-07-01</td>
-								<td><a class="btn btn-sm btn-warning" href="/admins/edit"><i
-											class="bi bi-pencil"></i></a> <button class="btn btn-sm btn-danger"
-										data-bs-toggle="modal" data-bs-target="#deleteModal"
-										data-delete-name="Admin User"><i class="bi bi-trash"></i></button></td>
-							</tr>
-						</tbody>
-					</table>
-				</div>
-				<div th:replace="~{layout/footer :: footer}"></div>
-			</div>
-		</main>
-	</div>
-	<div th:replace="~{layout/delete-modal :: deleteModal}"></div>
-	<div th:replace="~{layout/master :: scripts}"></div>
-</body>
+ <body>
+    <div class="app-shell">
+      <div th:replace="~{layout/sidebar :: sidebar('admins')}"></div>
+      <main class="main-area">
+        <div th:replace="~{layout/navbar :: navbar}"></div>
+        <div class="content-wrap">
+          <nav>
+            <ol class="breadcrumb">
+              <li class="breadcrumb-item">
+                <a href="/dashboard">Dashboard</a>
+              </li>
+              <li class="breadcrumb-item active">Admin Management</li>
+            </ol>
+          </nav>
+          <div class="page-card p-3">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+              <h1 class="h4 mb-0">Admin Management</h1>
+              <a class="btn btn-matcha" href="/admin-management/create"
+                ><i class="bi bi-person-plus me-1"></i>Create Admin</a
+              >
+            </div>
+            <div
+              th:if="${successMessage}"
+              class="alert alert-success"
+              th:text="${successMessage}"
+            ></div>
+            <div
+              th:if="${errorMessage}"
+              class="alert alert-danger"
+              th:text="${errorMessage}"
+            ></div>
+            <table class="table align-middle datatable">
+              <thead>
+                <tr>
+                  <!-- ID Column Header -->
+                  <th>ID</th>
+                  <th>Name</th>
+                  <th>Username</th>
+                  <th>Email</th>
+                  <th>Role</th>
+                  <th>Status</th>
+                  <th>Created Date</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr th:each="admin : ${admins}">
+                  <!-- ID Column Data -->
+                  <td th:text="${admin.id}"></td>
+                  <td th:text="${admin.name}"></td>
+                  <td th:text="${admin.username}"></td>
+                  <td th:text="${admin.email}"></td>
+                  <td th:text="${admin.role}"></td>
+                  <td>
+					<span class="badge" 
+						th:classappend="${admin.status.name() == 'ACTIVE'} ? 'bg-success' : 'bg-danger'" 
+						th:text="${admin.status}">
+						ACTIVE
+					</span>
+				  </td>
+                  <td
+                    th:text="${#temporals.format(admin.createdAt, 'yyyy-MM-dd')}"
+                  ></td>
+                  <td class="d-flex gap-1">
+                    <a
+                      class="btn btn-sm btn-warning"
+                      th:href="@{/admin-management/edit/{id}(id=${admin.id})}"
+                      ><i class="bi bi-pencil"></i
+                    ></a>
+                    <span
+                      th:if="${admin.role == T(com.library.management.model.Role).MAIN_ADMIN}"
+                    >
+                      <button
+                        class="btn btn-sm btn-secondary"
+                        disabled
+                        title="Main admin cannot be disabled"
+                      >
+                        <i class="bi bi-shield-lock"></i>
+                      </button>
+                    </span>
+                    <span
+                      th:if="${admin.role != T(com.library.management.model.Role).MAIN_ADMIN}"
+                    >
+                      <form
+                        th:action="@{/admin-management/disable/{id}(id=${admin.id})}"
+                        method="post"
+                        class="d-inline"
+                        onsubmit="
+                          return confirm(
+                            'Are you sure you want to disable this Admin account?',
+                          );
+                        "
+                        th:if="${admin.status == T(com.library.management.model.AccountStatus).ACTIVE}"
+                      >
+                        <input
+                          type="hidden"
+                          th:if="${_csrf != null}"
+                          th:name="${_csrf.parameterName}"
+                          th:value="${_csrf.token}"
+                        />
+                        <button class="btn btn-sm btn-danger" type="submit">
+                          <i class="bi bi-person-x"></i>
+                        </button>
+                      </form>
+                      <form
+                        th:action="@{/admin-management/enable/{id}(id=${admin.id})}"
+                        method="post"
+                        class="d-inline"
+                        onsubmit="
+                          return confirm(
+                            'Are you sure you want to enable this Admin account?',
+                          );
+                        "
+                        th:if="${admin.status == T(com.library.management.model.AccountStatus).INACTIVE}"
+                      >
+                        <input
+                          type="hidden"
+                          th:if="${_csrf != null}"
+                          th:name="${_csrf.parameterName}"
+                          th:value="${_csrf.token}"
+                        />
+                        <button class="btn btn-sm btn-success" type="submit">
+                          <i class="bi bi-person-check"></i>
+                        </button>
+                      </form>
+                    </span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div th:replace="~{layout/footer :: footer}"></div>
+        </div>
+      </main>
+    </div>
+    <div th:replace="~{layout/master :: scripts}"></div>
+ </body>
 
 </html>

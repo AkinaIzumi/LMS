@@ -1,0 +1,17 @@
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{layout/master :: head('Access Denied')}"></head>
+
+<body>
+  <div class="app-shell d-flex justify-content-center align-items-center min-vh-100">
+    <main class="glass-card p-5 shadow-lg text-center" style="max-width: 480px;">
+      <h1 class="display-6 mb-3">Access Denied</h1>
+      <p class="lead text-muted mb-4">You do not have permission to access this page.</p>
+      <a class="btn btn-matcha" th:href="@{/dashboard}">Back to Dashboard</a>
+    </main>
+  </div>
+  <div th:replace="~{layout/master :: scripts}"></div>
+</body>
+
+</html>

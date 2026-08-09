@@ -10,7 +10,7 @@
 
     <main class="main-area">
 
-        <div th:replace="~{layout/navbar :: navbar('Edit Member')}"></div>
+        <div th:replace="~{layout/navbar :: navbar}"></div>
 
         <div class="content-wrap">
 
@@ -111,8 +111,20 @@
 
 <div th:replace="~{layout/master :: scripts}"></div>
 
-<!-- JavaScript Event Listener -->
+<!-- JavaScript Event Listener & Date Fixer -->
 <script>
+// Page စတင်ဖွင့်ချိန်တွင် Database မှ Date များကို Input ၌ မှန်ကန်စွာ ဝင်ရောက်ပေါ်စေရန်
+document.addEventListener("DOMContentLoaded", function() {
+    const regDateVal = "[[${member.registeredDate}]]";
+    const expDateVal = "[[${member.expiredDate}]]";
+
+    if (regDateVal && regDateVal !== "null" && regDateVal !== "") {
+        document.getElementById("registeredDate").value = regDateVal.split("T")[0];
+    }
+    if (expDateVal && expDateVal !== "null" && expDateVal !== "") {
+        document.getElementById("expiredDate").value = expDateVal.split("T")[0];
+    }
+});
 
 function formatDate(dateString) {
     if (!dateString) return null;

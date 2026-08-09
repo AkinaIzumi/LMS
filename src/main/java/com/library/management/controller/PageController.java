@@ -1,5 +1,8 @@
 package com.library.management.controller;
 
+import org.springframework.security.core.Authentication;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -9,12 +12,17 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import com.library.management.dto.AdminEditForm;
+import com.library.management.entity.User;
 import com.library.management.service.BookService;
 import com.library.management.service.CategoryService;
+import com.library.management.dto.AdminForm;
 import com.library.management.entity.BorrowTransaction;
 import com.library.management.entity.Member;
+import com.library.management.model.AccountStatus;
 import com.library.management.service.BorrowTransactionService;
 import com.library.management.service.MemberService;
+import com.library.management.service.UserService;
 import  com.library.management.service.BookHistoryService;
 import lombok.RequiredArgsConstructor;
 
@@ -28,35 +36,155 @@ public class PageController {
     private final BorrowTransactionService borrowTransactionService;
     private final BookHistoryService bookHistoryService;
 
-    // 1. Auth / Login
+    @Autowired
+    private UserService userService;
+
     @GetMapping("/")
-    public String login() {
+    public String login(@RequestParam(value = "error", required = false) String error, Model model) {
+        if (error != null) {
+            model.addAttribute("loginError", "Login failed. Please check your credentials or account status.");
+        }
         return "auth/login"; 
     }
 
-    // 2. Dashboard
     @GetMapping("/dashboard")
     public String dashboard(Model model) {
-        model.addAttribute("totalBooks", bookService.getAllBooks().size());
-        model.addAttribute("totalCategories", categoryService.getAllCategories().size());
         return "dashboard/dashboard";
     }
 
+    @GetMapping("/access-denied")
+    public String accessDenied() {
+        return "error/403";
+    }
+
+    @GetMapping("/profile")
+    public String profile(Authentication authentication, Model model) {
+        if (authentication != null && authentication.getPrincipal() instanceof com.library.management.security.UserPrincipal principal) {
+            model.addAttribute("currentUser", principal);
+        }
+        return "profile/profile";
+    }
+
     // --- Admins Section ---
-    @GetMapping("/admins")
-    public String adminList() {
+    @GetMapping("/admin-management")
+    @PreAuthorize("hasRole('MAIN_ADMIN')")
+    public String adminManagement(Model model) {
+        model.addAttribute("admins", userService.getAllAdmins());
         return "admins/list";
     }
 
-    @GetMapping("/admins/create")
-    public String adminCreate() {
+    @GetMapping("/admin-management/create")
+    @PreAuthorize("hasRole('MAIN_ADMIN')")
+    public String adminCreate(Model model) {
+        model.addAttribute("adminForm", new AdminForm());
         return "admins/create";
     }
 
-    @GetMapping("/admins/edit")
-    public String adminEdit() {
+    @GetMapping("/admin-management/edit/{id}")
+    @PreAuthorize("hasRole('MAIN_ADMIN')")
+    public String adminEdit(@PathVariable Integer id, Model model) {
+        User admin = userService.getUserById(id)
+                .orElseThrow(() -> new RuntimeException("Admin not found"));
+        AdminEditForm form = new AdminEditForm();
+        form.setId(admin.getId());
+        form.setName(admin.getName());
+        form.setUsername(admin.getUsername());
+        form.setEmail(admin.getEmail());
+        form.setStatus(admin.getStatus());
+        model.addAttribute("adminEditForm", form);
         return "admins/edit";
     }
+
+    @PostMapping("/admin-management/create")
+    @PreAuthorize("hasRole('MAIN_ADMIN')")
+    public String createAdmin(@ModelAttribute AdminForm adminForm, RedirectAttributes redirectAttributes) {
+        try {
+            if (!adminForm.getPassword().equals(adminForm.getConfirmPassword())) {
+                throw new IllegalArgumentException("Passwords do not match.");
+            }
+            if (userService.usernameExists(adminForm.getUsername())) {
+                throw new IllegalArgumentException("Username is already taken.");
+            }
+            if (userService.emailExists(adminForm.getEmail())) {
+                throw new IllegalArgumentException("Email is already registered.");
+            }
+            User newUser = new User();
+            newUser.setName(adminForm.getName());
+            newUser.setUsername(adminForm.getUsername());
+            newUser.setEmail(adminForm.getEmail());
+            newUser.setPassword(adminForm.getPassword());
+            newUser.setStatus(adminForm.getStatus() != null ? adminForm.getStatus() : AccountStatus.ACTIVE);
+            userService.createAdmin(newUser);
+            redirectAttributes.addFlashAttribute("successMessage", "Admin account created successfully.");
+            return "redirect:/admin-management";
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
+            return "redirect:/admin-management/create";
+        }
+    }
+
+    @PostMapping("/admin-management/edit/{id}")
+    @PreAuthorize("hasRole('MAIN_ADMIN')")
+    public String updateAdmin(@PathVariable Integer id, @ModelAttribute AdminEditForm adminEditForm, RedirectAttributes redirectAttributes) {
+        try {
+            User updatedAdmin = new User();
+            updatedAdmin.setId(id);
+            updatedAdmin.setName(adminEditForm.getName());
+            updatedAdmin.setUsername(adminEditForm.getUsername());
+            updatedAdmin.setEmail(adminEditForm.getEmail());
+            updatedAdmin.setStatus(adminEditForm.getStatus());
+            userService.updateAdmin(id, updatedAdmin);
+            redirectAttributes.addFlashAttribute("successMessage", "Admin account updated successfully.");
+            return "redirect:/admin-management";
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
+            return "redirect:/admin-management/edit/" + id;
+        }
+    }
+
+    @PostMapping("/admin-management/disable/{id}")
+    @PreAuthorize("hasRole('MAIN_ADMIN')")
+    public String disableAdmin(@PathVariable Integer id, RedirectAttributes redirectAttributes) {
+        try {
+            userService.disableAdmin(id);
+            redirectAttributes.addFlashAttribute("successMessage", "Admin account disabled.");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
+        }
+        return "redirect:/admin-management";
+    }
+
+    @PostMapping("/admin-management/enable/{id}")
+    @PreAuthorize("hasRole('MAIN_ADMIN')")
+    public String enableAdmin(@PathVariable Integer id, RedirectAttributes redirectAttributes) {
+        try {
+            userService.enableAdmin(id);
+            redirectAttributes.addFlashAttribute("successMessage", "Admin account enabled.");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
+        }
+        return "redirect:/admin-management";
+    }
+
+    // Old Routes Redirects
+    @GetMapping("/admins")
+    @PreAuthorize("hasRole('MAIN_ADMIN')")
+    public String redirectOldAdminList() {
+        return "redirect:/admin-management";
+    }
+
+    @GetMapping("/admins/create")
+    @PreAuthorize("hasRole('MAIN_ADMIN')")
+    public String redirectOldAdminCreate() {
+        return "redirect:/admin-management/create";
+    }
+
+    @GetMapping("/admins/edit")
+    @PreAuthorize("hasRole('MAIN_ADMIN')")
+    public String redirectOldAdminEdit() {
+        return "redirect:/admin-management";
+    }
+
 
     // --- Books Section (HTML View Mappings) ---
     @GetMapping("/books")

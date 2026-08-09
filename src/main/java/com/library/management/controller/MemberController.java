@@ -1,13 +1,11 @@
 package com.library.management.controller;
 
 import com.library.management.entity.Member;
-import com.library.management.repository.MemberRepository;
 import com.library.management.service.MemberService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.ui.Model;
 import java.util.List;
 
 @RestController
@@ -56,6 +54,4 @@ public class MemberController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
     }
-
-
 }

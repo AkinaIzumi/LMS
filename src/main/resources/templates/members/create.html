@@ -13,7 +13,7 @@
     <main class="main-area">
 
         <!-- Navbar -->
-        <div th:replace="~{layout/navbar :: navbar('Create Member')}"></div>
+        <div th:replace="~{layout/navbar :: navbar}"></div>
 
         <div class="content-wrap">
 
@@ -54,8 +54,11 @@
 
                     <div class="row">
                         <div class="col-md-6 mb-3">
-                            <label class="form-label">Email</label>
-                            <input type="email" id="email" class="form-control" placeholder="Enter email" required>
+                            <label class="form-label">Email <span class="text-danger">*</span></label>
+                            <!-- type="text" သို့မဟုတ် type="email" ထားနိုင်ပြီး Gmail စစ်ဆေးရန် id သုံးထားပါသည် -->
+                            <input type="email" id="email" class="form-control" placeholder="example@gmail.com" required>
+                            <!-- Gmail မှန်မမှန် Error ပြမည့်နေရာ -->
+                            <div id="emailError" class="text-danger small mt-1" style="display: none;"></div>
                         </div>
                         <div class="col-md-6 mb-3">
                             <label class="form-label">Address</label>
@@ -119,10 +122,25 @@
 document.getElementById("memberForm").addEventListener("submit", async function(e) {
     e.preventDefault();
 
+    const emailInput = document.getElementById("email");
+    const emailError = document.getElementById("emailError");
+    const emailValue = emailInput.value.trim().toLowerCase();
+
+    const gmailPattern = /^[a-zA-Z0-9._%+-]+@gmail\.com$/;
+
+    if (!gmailPattern.test(emailValue)) {
+        emailError.style.display = "block";
+        emailError.textContent = "Please try again!";
+        emailInput.focus();
+        return; 
+    } else {
+        emailError.style.display = "none";
+    }
+
     const member = {
         name: document.getElementById("name").value,
         phone: document.getElementById("phone").value,
-        email: document.getElementById("email").value,
+        email: emailInput.value,
         address: document.getElementById("address").value,
         memberType: document.getElementById("memberType").value,
         status: document.getElementById("status").value,

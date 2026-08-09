@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{layout/master :: head('Profile')}"></head>
+
+<body>
+  <div class="app-shell">
+    <div th:replace="~{layout/sidebar :: sidebar('profile')}"></div>
+    <main class="main-area">
+      <div th:replace="~{layout/navbar :: navbar('Profile')}"></div>
+      <div class="content-wrap">
+        <nav>
+          <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="/dashboard">Dashboard</a></li>
+            <li class="breadcrumb-item active">Profile</li>
+          </ol>
+        </nav>
+        <div class="page-card p-4">
+          <h1 class="h4 mb-3">Profile</h1>
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label class="form-label">Full Name</label>
+              <input class="form-control" th:value="${currentUser.name}" readonly />
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="form-label">Username</label>
+              <input class="form-control" th:value="${currentUser.username}" readonly />
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="form-label">Email</label>
+              <input class="form-control" th:value="${currentUser.email}" readonly />
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="form-label">Role</label>
+              <input class="form-control" th:value="${currentUser.authorities[0].authority}" readonly />
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="form-label">Account Status</label>
+              <input class="form-control" th:value="${currentUser.status}" readonly />
+            </div>
+          </div>
+        </div>
+        <div th:replace="~{layout/footer :: footer}"></div>
+      </div>
+    </main>
+  </div>
+  <div th:replace="~{layout/master :: scripts}"></div>
+</body>
+
+</html>
