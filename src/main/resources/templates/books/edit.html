@@ -79,8 +79,8 @@
                         <div class="col-md-4 mb-3">
                             <label for="status" class="form-label">Status</label>
                             <select id="status" th:field="*{status}" class="form-select" required>
-                                <option value="Available" th:selected="${book.status == 'Available'}">Available</option>
-                                <option value="Borrowed" th:selected="${book.status == 'Borrowed'}">Borrowed</option>
+                                <option value="AVAILABLE" th:selected="${book.status == 'AVAILABLE'}">AVAILABLE</option>
+                                <option value="BORROWED" th:selected="${book.status == 'BORROWED'}">Borrowed</option>
                             </select>
                         </div>
                     </div>

@@ -51,9 +51,9 @@
                                     <option value="">-- Select Book --</option>
                                     <option th:each="b : ${books}" 
                                         th:value="${b.id}" 
-                                        th:text="${b.isbn + ' - ' + b.title + (b.status == 'Borrowed' ? ' (Borrowed)' : '')}"
-                                        th:disabled="${b.status == 'Borrowed'}"
-                                        th:class="${b.status == 'Borrowed' ? 'text-muted bg-light' : ''}">
+                                        th:text="${b.isbn + ' - ' + b.title + (b.status == 'BORROWED' ? ' (BORROWED)' : '')}"
+                                        th:disabled="${b.status == 'BORROWED'}"
+                                        th:class="${b.status == 'BORROWED' ? 'text-muted bg-light' : ''}">
                                     </option>
                                 </select>
                             </div>
@@ -75,7 +75,7 @@
                             <!-- Status -->
                             <div class="col-md-4 mb-3">
                                 <label class="form-label">Status <span class="text-danger">*</span></label>
-                                <input type="text" class="form-control bg-light" value="Borrowed" readonly>
+                                <input type="text" class="form-control bg-light" value="BORROWED" readonly>
                                 <input type="hidden" id="status" name="status" value="BORROWED">
                             </div>
                         </div>

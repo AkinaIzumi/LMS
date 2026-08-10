@@ -6,7 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
+import java.util.Map;
 import java.util.List;
 
 @RestController
@@ -61,12 +61,20 @@ public class BorrowTransactionController {
         List<BorrowTransaction> transactions = borrowTransactionService.getTransactionsByMember(memberId);
         return ResponseEntity.ok(transactions);
     }
+
     @PostMapping("/return/{id}")
-    public ResponseEntity<Void> returnBook(
+    public ResponseEntity<String> returnBook(
             @PathVariable Integer id, 
-            @RequestParam("status") String status) {
+            @RequestBody Map<String, String> requestBody) { 
         
-        borrowTransactionService.returnBook(id, status);
-        return ResponseEntity.ok().build();
+        String returnStatus = requestBody.get("returnStatus"); 
+        
+        if (returnStatus == null) {
+            returnStatus = requestBody.get("status");
+        }
+
+        String responseMessage = borrowTransactionService.returnBook(id, returnStatus);
+        
+        return ResponseEntity.ok(responseMessage);
     }
 }

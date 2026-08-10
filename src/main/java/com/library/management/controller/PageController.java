@@ -20,6 +20,10 @@ import com.library.management.dto.AdminForm;
 import com.library.management.entity.BorrowTransaction;
 import com.library.management.entity.Member;
 import com.library.management.model.AccountStatus;
+import com.library.management.repository.BookRepository;
+import com.library.management.repository.BorrowTransactionRepository;
+import com.library.management.repository.HoldRepository;
+import com.library.management.repository.MemberRepository;
 import com.library.management.service.BorrowTransactionService;
 import com.library.management.service.MemberService;
 import com.library.management.service.UserService;
@@ -39,6 +43,18 @@ public class PageController {
     @Autowired
     private UserService userService;
 
+    @Autowired
+    private BookRepository bookRepository;
+
+    @Autowired
+    private MemberRepository memberRepository;
+
+    @Autowired
+    private BorrowTransactionRepository transactionRepository;
+
+    @Autowired
+    private HoldRepository holdRepository;
+
     @GetMapping("/")
     public String login(@RequestParam(value = "error", required = false) String error, Model model) {
         if (error != null) {
@@ -49,7 +65,16 @@ public class PageController {
 
     @GetMapping("/dashboard")
     public String dashboard(Model model) {
-        return "dashboard/dashboard";
+
+        model.addAttribute("totalBooks", bookRepository.count());
+        model.addAttribute("totalMembers", memberRepository.count());
+        model.addAttribute("borrowedCount", transactionRepository.countByStatus("BORROWED"));
+        model.addAttribute("overdueCount", transactionRepository.countByStatus("OVERDUE"));
+        model.addAttribute("holdCount", holdRepository.countByStatus("PENDING"));
+
+        model.addAttribute("recentTransactions", transactionRepository.findTop5ByOrderByIdDesc());
+
+        return "dashboard/dashboard"; 
     }
 
     @GetMapping("/access-denied")

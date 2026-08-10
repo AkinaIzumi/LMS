@@ -20,4 +20,6 @@ public interface BookRepository extends JpaRepository<Book, Integer> {
     List<Book> findByCategoryId(Integer categoryId);
 
     boolean existsByIsbn(String isbn);
+
+    List<Book> findByAvailableQuantityLessThanEqual(int quantity);
 }

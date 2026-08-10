@@ -47,7 +47,7 @@
                                 <td th:text="${tx.book != null ? tx.book.title : '-'}"></td>
                                 <td>
                                     <span class="badge" 
-                                        th:classappend="${tx.status == 'Borrowed' ? 'bg-warning text-dark' : (tx.status == 'OVERDUE' || tx.status == 'loss or damage' ? 'bg-danger' : 'bg-success')}"
+                                        th:classappend="${tx.status == 'BORROWED' ? 'bg-warning text-dark' : (tx.status == 'OVERDUE' || tx.status == 'loss or damage' ? 'bg-danger' : 'bg-success')}"
                                         th:text="${tx.status}"></span>
                                 </td>
                                 <td th:text="${tx.borrowDate != null ? tx.borrowDate : '-'}"></td>
@@ -68,8 +68,11 @@
 
                                         <button type="button" class="btn btn-sm btn-success d-inline-flex justify-content-center align-items-center" 
                                                 style="width: 32px; height: 32px; padding: 0;"
-                                                th:if="${tx.status == 'Borrowed' or tx.status == 'OVERDUE'}" 
-                                                th:onclick="openReturnModal([[${tx.id}]])" 
+                                                th:if="${tx.status == 'BORROWED' or tx.status == 'OVERDUE'}" 
+                                                data-bs-toggle="modal" 
+                                                data-bs-target="#returnModal" 
+                                                th:data-return-url="@{/api/transactions/return/{id}(id=${tx.id})}"
+                                                th:data-book="${tx.book.title}"
                                                 title="Return Book">
                                             <i class="bi bi-arrow-return-left"></i>
                                         </button>
@@ -98,13 +101,13 @@
                         <label for="returnStatusSelect" class="form-label">Choose Action:</label>
                         <select id="returnStatusSelect" class="form-select">
                             <option value="RETURNED"> Return </option>
-                            <option value="loss or damage">Loss or Damage</option>
+                            <option value="lOSS or DAMAGE">Loss or Damage</option>
                         </select>
                     </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="button" class="btn btn-primary" onclick="submitReturn()">Confirm</button>
+                    <button type="button" id="confirmReturnBtn" class="btn btn-success">Confirm </button>
                 </div>
             </div>
         </div>

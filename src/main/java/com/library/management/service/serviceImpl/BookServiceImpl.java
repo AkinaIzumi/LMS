@@ -45,6 +45,10 @@ public class BookServiceImpl implements BookService {
                 throw new RuntimeException("Book with ISBN " + book.getIsbn() + " already exists.");
             }
         }
+
+        if (book.getStatus() != null) {
+            book.setStatus(book.getStatus().toUpperCase());
+        }
         return bookRepository.save(book);
     }
 
@@ -60,6 +64,9 @@ public class BookServiceImpl implements BookService {
         existingBook.setAvailableQuantity(bookDetails.getAvailableQuantity());
         existingBook.setStatus(bookDetails.getStatus());
 
+        if (bookDetails.getStatus() != null) {
+            existingBook.setStatus(bookDetails.getStatus().toUpperCase());
+        }
         return bookRepository.save(existingBook);
     }
 

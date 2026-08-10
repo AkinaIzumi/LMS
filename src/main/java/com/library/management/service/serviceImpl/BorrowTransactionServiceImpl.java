@@ -9,6 +9,7 @@ import com.library.management.repository.BorrowTransactionRepository;
 import com.library.management.entity.Hold;
 import com.library.management.repository.HoldRepository;
 import com.library.management.service.BorrowTransactionService;
+import com.library.management.service.EmailService; // 💡 EmailService ကို Import လုပ်ရန်
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -33,6 +34,9 @@ public class BorrowTransactionServiceImpl implements BorrowTransactionService {
 
     @Autowired
     private HoldRepository holdRepository;
+
+    @Autowired
+    private EmailService emailService; // 💡 EmailService အား Autowired လုပ်ရန်
 
     @Override
     public List<BorrowTransaction> getAllTransactions() {
@@ -62,6 +66,12 @@ public class BorrowTransactionServiceImpl implements BorrowTransactionService {
             existing.setStatus(transactionDetails.getStatus());
         }
 
+        existing.setFine(transactionDetails.getFine());
+
+        if (transactionDetails.getReturnDate() != null) {
+            existing.setReturnDate(transactionDetails.getReturnDate());
+        }
+
         return borrowTransactionRepository.save(existing);
     }
 
@@ -79,7 +89,7 @@ public class BorrowTransactionServiceImpl implements BorrowTransactionService {
         book.setAvailableQuantity(book.getAvailableQuantity() - 1);
 
         if (book.getAvailableQuantity() == 0) {
-            book.setStatus("Borrowed");
+            book.setStatus("BORROWED");
         }
         
         bookRepository.save(book);
@@ -89,7 +99,7 @@ public class BorrowTransactionServiceImpl implements BorrowTransactionService {
         }
 
         transaction.setBook(book);
-        transaction.setStatus("Borrowed");
+        transaction.setStatus("BORROWED");
         if (transaction.getBorrowDate() == null) {
             transaction.setBorrowDate(LocalDate.now());
         }
@@ -114,7 +124,7 @@ public class BorrowTransactionServiceImpl implements BorrowTransactionService {
         history.setBorrowDate(savedTransaction.getBorrowDate());
         history.setDueDate(savedTransaction.getDueDate()); 
         
-        history.setStatus("Borrowed"); 
+        history.setStatus("BORROWED"); 
         
         history.setRemarks("Book borrowed with code: " + savedTransaction.getTransactionCode());
         
@@ -125,7 +135,7 @@ public class BorrowTransactionServiceImpl implements BorrowTransactionService {
 
    @Override
     @Transactional 
-    public void returnBook(Integer transactionId, String returnStatus) {
+    public String returnBook(Integer transactionId, String returnStatus) {
         BorrowTransaction tx = borrowTransactionRepository.findById(transactionId)
                 .orElseThrow(() -> new RuntimeException("Transaction not found"));
 
@@ -136,8 +146,10 @@ public class BorrowTransactionServiceImpl implements BorrowTransactionService {
         double bookPrice = (book != null) ? book.getPrice() : 0.0;
         LocalDate dueDate = tx.getDueDate();
 
+        String alertMessage = null;
+
         if ("loss or damage".equalsIgnoreCase(returnStatus)) {
-            tx.setStatus("lOSS or DAMAGE");
+            tx.setStatus("LOSS or DAMAGE");
 
             if (today.isAfter(dueDate)) {
                 long overdueDays = ChronoUnit.DAYS.between(dueDate, today);
@@ -145,6 +157,27 @@ public class BorrowTransactionServiceImpl implements BorrowTransactionService {
                 tx.setFine(totalFine);
             } else {
                 tx.setFine(bookPrice); 
+            }
+
+            // 💡 စာအုပ်ပျောက်ဆုံး/ပျက်စီး၍ ဤစာအုပ်အား PENDING တင်ထားသူများကို Cancel လုပ်ပြီး Email ပို့ရန်
+            if (book != null) {
+                List<Hold> pendingHolds = holdRepository.findByBookIdAndStatus(book.getId(), "PENDING");
+                for (Hold h : pendingHolds) {
+                    h.setStatus("CANCELLED");
+                    holdRepository.save(h);
+
+                    if (h.getMember() != null && h.getMember().getEmail() != null) {
+                        try {
+                            emailService.sendHoldCancelledEmail(
+                                h.getMember().getEmail(),
+                                h.getMember().getName(),
+                                book.getTitle()
+                            );
+                        } catch (Exception e) {
+                            System.err.println("Failed to send cancellation email: " + e.getMessage());
+                        }
+                    }
+                }
             }
 
         } 
@@ -162,17 +195,30 @@ public class BorrowTransactionServiceImpl implements BorrowTransactionService {
 
             if (book != null) {
                 book.setAvailableQuantity(book.getAvailableQuantity() + 1);
-                book.setStatus("AVAILABLE");
+                book.setStatus("AVAILABLE"); 
                 bookRepository.save(book);
-            }
 
-            Hold nextHold = holdRepository.findFirstByBookIdAndStatusOrderByCreatedAtAsc(book.getId(), "PENDING");
-                if (nextHold != null) {
-                    System.out.println("⚠️ Alert: This book is held by " + nextHold.getMember().getName());
+                // 💡 စာအုပ်ပြန်ရောက်လာ၍ ပထမဆုံး Hold တင်ထားသူကို အလှည့်ရောက်ကြောင်း Email ပို့ရန်
+                Hold nextHold = holdRepository.findFirstByBookIdAndStatusOrderByCreatedAtAsc(book.getId(), "PENDING");
+                if (nextHold != null && nextHold.getMember() != null) {
+                    alertMessage = "⚠️ Alert: This book is held by " + nextHold.getMember().getName();
+                    
+                    try {
+                        emailService.sendHoldAvailableEmail(
+                            nextHold.getMember().getEmail(),
+                            nextHold.getMember().getName(),
+                            book.getTitle()
+                        );
+                    } catch (Exception e) {
+                        System.err.println("Failed to send hold available email: " + e.getMessage());
+                    }
                 }
+            }
         }
 
         borrowTransactionRepository.save(tx);
+
+        return alertMessage != null ? alertMessage : "Book returned successfully!";
     }
 
     @Override
@@ -189,6 +235,4 @@ public class BorrowTransactionServiceImpl implements BorrowTransactionService {
     public List<BorrowTransaction> findByDueDateBeforeAndStatus(LocalDate date, String status) {
         return borrowTransactionRepository.findByDueDateBeforeAndStatus(date, status);
     }
-
-    
 }
