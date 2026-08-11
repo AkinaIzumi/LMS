@@ -2,6 +2,8 @@ package com.library.management.repository;
 
 import com.library.management.entity.BorrowTransaction;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
@@ -23,4 +25,11 @@ public interface BorrowTransactionRepository extends JpaRepository<BorrowTransac
     long countByStatus(String status);
 
     List<BorrowTransaction> findTop5ByOrderByIdDesc();
+
+    long countByBookIdAndStatusIn(Integer bookId, List<String> statuses);
+
+    List<BorrowTransaction> findByBorrowDateBetween(LocalDate startDate, LocalDate endDate);
+
+    @Query("SELECT SUM(t.fine) FROM BorrowTransaction t WHERE t.borrowDate BETWEEN :startDate AND :endDate")
+    Double getTotalFineBetween(@Param("startDate") LocalDate startDate, @Param("endDate") LocalDate endDate);
 }

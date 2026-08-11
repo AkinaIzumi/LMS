@@ -137,4 +137,25 @@ public class UserServiceImpl implements UserService {
         User admin = new User(name, username, email, passwordEncoder.encode(rawPassword), Role.MAIN_ADMIN, AccountStatus.ACTIVE);
         return userRepository.save(admin);
     }
+
+    @Override
+    public User resetPassword(Integer id, String rawPassword) {
+        User existing = userRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("User not found."));
+        existing.setPassword(passwordEncoder.encode(rawPassword));
+        return userRepository.save(existing);
+    }
+
+    @Override
+    public User updateUserName(Integer id, String username) {
+        User existing = userRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("User not found."));
+
+        if (!existing.getUsername().equals(username) && usernameExists(username)) {
+            throw new IllegalArgumentException("Username is already taken.");
+        }
+
+        existing.setUsername(username);
+        return userRepository.save(existing);
+    }
 }

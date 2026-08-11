@@ -37,7 +37,6 @@
             <table class="table align-middle datatable">
               <thead>
                 <tr>
-                  <!-- ID Column Header -->
                   <th>ID</th>
                   <th>Name</th>
                   <th>Username</th>
@@ -50,31 +49,31 @@
               </thead>
               <tbody>
                 <tr th:each="admin : ${admins}">
-                  <!-- ID Column Data -->
                   <td th:text="${admin.id}"></td>
                   <td th:text="${admin.name}"></td>
                   <td th:text="${admin.username}"></td>
                   <td th:text="${admin.email}"></td>
                   <td th:text="${admin.role}"></td>
                   <td>
-					<span class="badge" 
-						th:classappend="${admin.status.name() == 'ACTIVE'} ? 'bg-success' : 'bg-danger'" 
-						th:text="${admin.status}">
-						ACTIVE
-					</span>
-				  </td>
+                    <span class="badge" 
+                      th:classappend="${admin.status.name() == 'ACTIVE'} ? 'bg-success' : 'bg-danger'" 
+                      th:text="${admin.status}">
+                      ACTIVE
+                    </span>
+                  </td>
                   <td
                     th:text="${#temporals.format(admin.createdAt, 'yyyy-MM-dd')}"
                   ></td>
                   <td class="d-flex gap-1">
+                    <!-- 1. EDIT BUTTON (ሁሉም admin ಗಳಿಗೆ ပေါ်မည်) -->
                     <a
                       class="btn btn-sm btn-warning"
                       th:href="@{/admin-management/edit/{id}(id=${admin.id})}"
-                      ><i class="bi bi-pencil"></i
-                    ></a>
-                    <span
-                      th:if="${admin.role == T(com.library.management.model.Role).MAIN_ADMIN}"
-                    >
+                      title="Edit Admin"
+                    ><i class="bi bi-pencil"></i></a>
+
+                    <!-- MAIN_ADMIN ဖြစ်ပါက Shield Lock ခလုတ်ပြမည် (Disable လုပ်၍မရပါ) -->
+                    <span th:if="${admin.role == T(com.library.management.model.Role).MAIN_ADMIN}">
                       <button
                         class="btn btn-sm btn-secondary"
                         disabled
@@ -83,18 +82,22 @@
                         <i class="bi bi-shield-lock"></i>
                       </button>
                     </span>
-                    <span
-                      th:if="${admin.role != T(com.library.management.model.Role).MAIN_ADMIN}"
-                    >
+
+                    <!-- MAIN_ADMIN မဟုတ်မှသာ Reset Password နှင့် Disable/Enable ခလုတ်များ ပေါ်မည် -->
+                    <span th:if="${admin.role != T(com.library.management.model.Role).MAIN_ADMIN}">
+                      <!-- 2. RESET PASSWORD BUTTON -->
+                      <a
+                        class="btn btn-sm btn-info"
+                        th:href="@{/admin-management/reset-password/{id}(id=${admin.id})}"
+                        title="Reset Password"
+                      ><i class="bi bi-key"></i></a>
+
+                      <!-- 3. DISABLE BUTTON (Status ACTIVE ဖြစ်မှ ပေါ်မည်) -->
                       <form
                         th:action="@{/admin-management/disable/{id}(id=${admin.id})}"
                         method="post"
                         class="d-inline"
-                        onsubmit="
-                          return confirm(
-                            'Are you sure you want to disable this Admin account?',
-                          );
-                        "
+                        onsubmit="return confirm('Are you sure you want to disable this Admin account?');"
                         th:if="${admin.status == T(com.library.management.model.AccountStatus).ACTIVE}"
                       >
                         <input
@@ -103,19 +106,17 @@
                           th:name="${_csrf.parameterName}"
                           th:value="${_csrf.token}"
                         />
-                        <button class="btn btn-sm btn-danger" type="submit">
+                        <button class="btn btn-sm btn-danger" type="submit" title="Disable Admin">
                           <i class="bi bi-person-x"></i>
                         </button>
                       </form>
+
+                      <!-- ENABLE BUTTON (Status INACTIVE ဖြစ်မှ ပေါ်မည်) -->
                       <form
                         th:action="@{/admin-management/enable/{id}(id=${admin.id})}"
                         method="post"
                         class="d-inline"
-                        onsubmit="
-                          return confirm(
-                            'Are you sure you want to enable this Admin account?',
-                          );
-                        "
+                        onsubmit="return confirm('Are you sure you want to enable this Admin account?');"
                         th:if="${admin.status == T(com.library.management.model.AccountStatus).INACTIVE}"
                       >
                         <input
@@ -124,7 +125,7 @@
                           th:name="${_csrf.parameterName}"
                           th:value="${_csrf.token}"
                         />
-                        <button class="btn btn-sm btn-success" type="submit">
+                        <button class="btn btn-sm btn-success" type="submit" title="Enable Admin">
                           <i class="bi bi-person-check"></i>
                         </button>
                       </form>

@@ -1,6 +1,11 @@
 package com.library.management.controller;
 
 import org.springframework.security.core.Authentication;
+
+import java.time.LocalDate;
+
+import com.library.management.dto.ProfileForm;
+import com.library.management.dto.ResetPasswordForm;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
@@ -12,6 +17,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import com.library.management.model.Role;
+import com.library.management.security.UserPrincipal;
 import com.library.management.dto.AdminEditForm;
 import com.library.management.entity.User;
 import com.library.management.service.BookService;
@@ -26,6 +33,7 @@ import com.library.management.repository.HoldRepository;
 import com.library.management.repository.MemberRepository;
 import com.library.management.service.BorrowTransactionService;
 import com.library.management.service.MemberService;
+import com.library.management.service.ReportService;
 import com.library.management.service.UserService;
 import  com.library.management.service.BookHistoryService;
 import lombok.RequiredArgsConstructor;
@@ -55,6 +63,9 @@ public class PageController {
     @Autowired
     private HoldRepository holdRepository;
 
+    @Autowired
+    private ReportService reportService;
+
     @GetMapping("/")
     public String login(@RequestParam(value = "error", required = false) String error, Model model) {
         if (error != null) {
@@ -64,7 +75,13 @@ public class PageController {
     }
 
     @GetMapping("/dashboard")
-    public String dashboard(Model model) {
+    public String dashboard(@RequestParam(value = "year", required = false) Integer year,
+                            @RequestParam(value = "month", required = false) Integer month,
+                            Model model) {
+
+        LocalDate now = LocalDate.now();
+        int selectedYear = (year != null) ? year : now.getYear();
+        int selectedMonth = (month != null) ? month : now.getMonthValue();
 
         model.addAttribute("totalBooks", bookRepository.count());
         model.addAttribute("totalMembers", memberRepository.count());
@@ -72,11 +89,15 @@ public class PageController {
         model.addAttribute("overdueCount", transactionRepository.countByStatus("OVERDUE"));
         model.addAttribute("holdCount", holdRepository.countByStatus("PENDING"));
 
+        double monthlyFine = reportService.getMonthlyTotalFine(selectedYear, selectedMonth);
+        model.addAttribute("monthlyFine", monthlyFine);
+        model.addAttribute("selectedYear", selectedYear);
+        model.addAttribute("selectedMonth", selectedMonth);
+
         model.addAttribute("recentTransactions", transactionRepository.findTop5ByOrderByIdDesc());
 
-        return "dashboard/dashboard"; 
+        return "dashboard/dashboard";
     }
-
     @GetMapping("/access-denied")
     public String accessDenied() {
         return "error/403";
@@ -84,10 +105,87 @@ public class PageController {
 
     @GetMapping("/profile")
     public String profile(Authentication authentication, Model model) {
-        if (authentication != null && authentication.getPrincipal() instanceof com.library.management.security.UserPrincipal principal) {
-            model.addAttribute("currentUser", principal);
+         if (authentication != null && authentication.getPrincipal() instanceof UserPrincipal principal) {
+            ProfileForm profileForm = new ProfileForm();
+            profileForm.setId(principal.getId());
+            profileForm.setName(principal.getName());
+            profileForm.setUsername(principal.getUsername());
+            profileForm.setEmail(principal.getEmail());
+            // load role/status from the persisted user for accuracy
+            userService.getUserById(principal.getId()).ifPresent(user -> {
+                profileForm.setRole(user.getRole());
+                profileForm.setStatus(user.getStatus());
+            });
+            model.addAttribute("profileForm", profileForm);
         }
         return "profile/profile";
+    }
+
+    @PostMapping("/profile")
+    public String updateProfile(@ModelAttribute ProfileForm profileForm,
+                                Authentication authentication,
+                                RedirectAttributes redirectAttributes) {
+        if (authentication == null || !(authentication.getPrincipal() instanceof UserPrincipal principal)) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Unable to update profile.");
+            return "redirect:/profile";
+        }
+
+        try {
+            if (!principal.getId().equals(profileForm.getId())) {
+                throw new IllegalArgumentException("You may only update your own profile.");
+            }
+
+            // Update only the username field (do not change name)
+            User updated = userService.updateUserName(principal.getId(), profileForm.getUsername());
+
+            // Refresh the SecurityContext so the session reflects the new username immediately
+            com.library.management.security.UserPrincipal newPrincipal = new com.library.management.security.UserPrincipal(updated);
+            org.springframework.security.authentication.UsernamePasswordAuthenticationToken newAuth =
+                    new org.springframework.security.authentication.UsernamePasswordAuthenticationToken(
+                            newPrincipal, newPrincipal.getPassword(), newPrincipal.getAuthorities());
+            org.springframework.security.core.context.SecurityContextHolder.getContext().setAuthentication(newAuth);
+
+            redirectAttributes.addFlashAttribute("successMessage", "Profile updated successfully.");
+            return "redirect:/profile";
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
+            return "redirect:/profile";
+        }
+    }
+
+    @GetMapping("/admin-management/reset-password/{id}")
+    @PreAuthorize("hasRole('MAIN_ADMIN')")
+    public String resetPasswordForm(@PathVariable Integer id, Model model) {
+        User admin = userService.getUserById(id)
+                .orElseThrow(() -> new RuntimeException("Admin not found"));
+        ResetPasswordForm resetPasswordForm = new ResetPasswordForm();
+        resetPasswordForm.setId(admin.getId());
+        resetPasswordForm.setName(admin.getName());
+        resetPasswordForm.setEmail(admin.getEmail());
+        model.addAttribute("resetPasswordForm", resetPasswordForm);
+        return "admins/reset-password";
+    }
+
+    @PostMapping("/admin-management/reset-password/{id}")
+    @PreAuthorize("hasRole('MAIN_ADMIN')")
+    public String resetPassword(@PathVariable Integer id, 
+                                @ModelAttribute("resetPasswordForm") ResetPasswordForm form, 
+                                RedirectAttributes redirectAttributes) {
+        try {
+     
+            if (!form.getNewPassword().equals(form.getConfirmPassword())) {
+                redirectAttributes.addFlashAttribute("errorMessage", "New password and confirm password do not match.");
+                return "redirect:/admin-management/reset-password/" + id;
+            }
+
+            userService.resetPassword(id, form.getNewPassword());
+
+            redirectAttributes.addFlashAttribute("successMessage", "Password has been reset successfully.");
+            return "redirect:/admin-management";
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
+            return "redirect:/admin-management/reset-password/" + id;
+        }
     }
 
     // --- Admins Section ---

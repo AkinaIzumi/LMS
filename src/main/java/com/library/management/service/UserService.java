@@ -1,7 +1,6 @@
 package com.library.management.service;
 
 import com.library.management.entity.User;
-import com.library.management.model.Role;
 
 import java.util.List;
 import java.util.Optional;
@@ -33,4 +32,8 @@ public interface UserService {
     User createMainAdmin(String name, String username, String email, String rawPassword);
     
     User resetMainAdmin(String name, String username, String email, String rawPassword);
+
+    User updateUserName(Integer id, String name);
+
+    User resetPassword(Integer id, String rawPassword);
 }

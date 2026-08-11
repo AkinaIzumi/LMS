@@ -4,47 +4,97 @@
 <head th:replace="~{layout/master :: head('Profile')}"></head>
 
 <body>
-  <div class="app-shell">
-    <div th:replace="~{layout/sidebar :: sidebar('profile')}"></div>
-    <main class="main-area">
-      <div th:replace="~{layout/navbar :: navbar('Profile')}"></div>
-      <div class="content-wrap">
-        <nav>
-          <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a href="/dashboard">Dashboard</a></li>
-            <li class="breadcrumb-item active">Profile</li>
-          </ol>
-        </nav>
-        <div class="page-card p-4">
-          <h1 class="h4 mb-3">Profile</h1>
-          <div class="row">
-            <div class="col-md-6 mb-3">
-              <label class="form-label">Full Name</label>
-              <input class="form-control" th:value="${currentUser.name}" readonly />
-            </div>
-            <div class="col-md-6 mb-3">
-              <label class="form-label">Username</label>
-              <input class="form-control" th:value="${currentUser.username}" readonly />
-            </div>
-            <div class="col-md-6 mb-3">
-              <label class="form-label">Email</label>
-              <input class="form-control" th:value="${currentUser.email}" readonly />
-            </div>
-            <div class="col-md-6 mb-3">
-              <label class="form-label">Role</label>
-              <input class="form-control" th:value="${currentUser.authorities[0].authority}" readonly />
-            </div>
-            <div class="col-md-6 mb-3">
-              <label class="form-label">Account Status</label>
-              <input class="form-control" th:value="${currentUser.status}" readonly />
-            </div>
-          </div>
-        </div>
-        <div th:replace="~{layout/footer :: footer}"></div>
-      </div>
-    </main>
-  </div>
-  <div th:replace="~{layout/master :: scripts}"></div>
-</body>
-
+    <div class="app-shell">
+      <div th:replace="~{layout/sidebar :: sidebar('profile')}"></div>
+      <main class="main-area">
+        <div th:replace="~{layout/navbar :: navbar}"></div>
+        <div class="content-wrap">
+          <nav>
+            <ol class="breadcrumb">
+              <li class="breadcrumb-item">
+                <a href="/dashboard">Dashboard</a>
+              </li>
+              <li class="breadcrumb-item active">Profile</li>
+            </ol>
+          </nav>
+          <div class="page-card p-4">
+            <h1 class="h4 mb-3">Profile</h1>
+            <form
+              th:action="@{/profile}"
+              th:object="${profileForm}"
+              method="post"
+            >
+              <input type="hidden" th:field="*{id}" />
+              <div class="d-flex align-items-center gap-3 mb-4">
+                <img
+                  th:src="@{|https://ui-avatars.com/api/?name=${profileForm.username}&background=6f8f4e&color=fff|}"
+                  class="rounded-circle"
+                  width="96"
+                  height="96"
+                  alt="Avatar"
+                />
+                <div>
+                  <div class="h5 mb-1" th:text="${profileForm.username}">
+                    Username
+                  </div>
+                  <div class="text-muted" th:text="${profileForm.role}">
+                    Role
+                  </div>
+                </div>
+              </div>
+              <div
+                th:if="${successMessage}"
+                class="alert alert-success"
+                th:text="${successMessage}"
+              ></div>
+              <div
+                th:if="${errorMessage}"
+                class="alert alert-danger"
+                th:text="${errorMessage}"
+              ></div>
+              <div class="row">
+                <div class="col-md-6 mb-3">
+                  <label class="form-label">Username</label>
+                  <input
+                    class="form-control"
+                    th:field="*{username}"
+                    type="text"
+                    required
+                  />
+                </div>
+                <div class="col-md-6 mb-3">
+                  <label class="form-label">Email</label>
+                  <input class="form-control" th:field="*{email}" readonly />
+                </div>
+                <div class="col-md-6 mb-3">
+                  <label class="form-label">Role</label>
+                  <input
+                    class="form-control"
+                    th:value="${profileForm.role}"
+                    readonly
+                  />
+                </div>
+                <div class="col-md-6 mb-3">
+                  <label class="form-label">Status</label>
+                  <input
+                    class="form-control"
+                    th:value="${profileForm.status}"
+                    readonly
+                  />
+                </div>
+              </div>
+              <div class="mt-4">
+                <button class="btn btn-matcha" type="submit">
+                  Save Changes
+                </button>
+                <a href="/dashboard" class="btn btn-secondary">
+                  <i class="bi bi-arrow-left me-1"></i>Cancel
+                </a>
+              </div>
+            </form>
+          <div th:replace="~{layout/footer :: footer}"></div>
+          </main>
+    </div>
+    <div th:replace="~{layout/master :: scripts}"></div>
+  </body>
 </html>

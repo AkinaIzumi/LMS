@@ -9,7 +9,7 @@ import com.library.management.repository.BorrowTransactionRepository;
 import com.library.management.entity.Hold;
 import com.library.management.repository.HoldRepository;
 import com.library.management.service.BorrowTransactionService;
-import com.library.management.service.EmailService; // 💡 EmailService ကို Import လုပ်ရန်
+import com.library.management.service.EmailService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -36,7 +36,7 @@ public class BorrowTransactionServiceImpl implements BorrowTransactionService {
     private HoldRepository holdRepository;
 
     @Autowired
-    private EmailService emailService; // 💡 EmailService အား Autowired လုပ်ရန်
+    private EmailService emailService; 
 
     @Override
     public List<BorrowTransaction> getAllTransactions() {
@@ -159,30 +159,7 @@ public class BorrowTransactionServiceImpl implements BorrowTransactionService {
                 tx.setFine(bookPrice); 
             }
 
-            // 💡 စာအုပ်ပျောက်ဆုံး/ပျက်စီး၍ ဤစာအုပ်အား PENDING တင်ထားသူများကို Cancel လုပ်ပြီး Email ပို့ရန်
-            if (book != null) {
-                List<Hold> pendingHolds = holdRepository.findByBookIdAndStatus(book.getId(), "PENDING");
-                for (Hold h : pendingHolds) {
-                    h.setStatus("CANCELLED");
-                    holdRepository.save(h);
-
-                    if (h.getMember() != null && h.getMember().getEmail() != null) {
-                        try {
-                            emailService.sendHoldCancelledEmail(
-                                h.getMember().getEmail(),
-                                h.getMember().getName(),
-                                book.getTitle()
-                            );
-                        } catch (Exception e) {
-                            System.err.println("Failed to send cancellation email: " + e.getMessage());
-                        }
-                    }
-                }
-            }
-
-        } 
-
-        else {
+        } else {
             tx.setStatus("RETURNED");
 
             if (today.isAfter(dueDate)) {
@@ -198,7 +175,6 @@ public class BorrowTransactionServiceImpl implements BorrowTransactionService {
                 book.setStatus("AVAILABLE"); 
                 bookRepository.save(book);
 
-                // 💡 စာအုပ်ပြန်ရောက်လာ၍ ပထမဆုံး Hold တင်ထားသူကို အလှည့်ရောက်ကြောင်း Email ပို့ရန်
                 Hold nextHold = holdRepository.findFirstByBookIdAndStatusOrderByCreatedAtAsc(book.getId(), "PENDING");
                 if (nextHold != null && nextHold.getMember() != null) {
                     alertMessage = "⚠️ Alert: This book is held by " + nextHold.getMember().getName();
@@ -217,6 +193,33 @@ public class BorrowTransactionServiceImpl implements BorrowTransactionService {
         }
 
         borrowTransactionRepository.save(tx);
+
+        if (book != null) {
+
+            long currentlyBorrowedCount = borrowTransactionRepository.countByBookIdAndStatusIn(book.getId(), List.of("BORROWED"));
+            
+            boolean isStockTotallyUnavailable = (book.getAvailableQuantity() == 0) && (currentlyBorrowedCount == 0); 
+
+            if (isStockTotallyUnavailable) {
+                List<Hold> pendingHolds = holdRepository.findByBookIdAndStatus(book.getId(), "PENDING");
+                for (Hold h : pendingHolds) {
+                    h.setStatus("CANCELLED");
+                    holdRepository.save(h);
+
+                    if (h.getMember() != null && h.getMember().getEmail() != null) {
+                        try {
+                            emailService.sendHoldCancelledEmail(
+                                h.getMember().getEmail(),
+                                h.getMember().getName(),
+                                book.getTitle()
+                            );
+                        } catch (Exception e) {
+                            System.err.println("Failed to send cancellation email: " + e.getMessage());
+                        }
+                    }
+                }
+            }
+        }
 
         return alertMessage != null ? alertMessage : "Book returned successfully!";
     }
