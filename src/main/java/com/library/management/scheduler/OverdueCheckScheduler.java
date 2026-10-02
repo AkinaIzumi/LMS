@@ -29,7 +29,7 @@ public class OverdueCheckScheduler {
     @Autowired
     private HoldRepository holdRepository;
 
-    @Scheduled(cron = "0 50 8 * * ?")
+    @Scheduled(cron = "0 25 00 * * ?")
     public void checkOverdueBooks() {
         LocalDate today = LocalDate.now();
 
